@@ -70,37 +70,63 @@ async function initDashboard() {
         // Show loading state
         showLoadingState();
         
-        // Load all required data
-        const [
-            topDomainsResponse, 
-            salaryRangeResponse, 
-            locationResponse, 
-            companyHiringResponse,
-            salaryStatsResponse
-        ] = await Promise.all([
-            apiClient.getTopDomains(),
-            apiClient.getSalaryRange(),
-            apiClient.getJobsByCity(),
-            apiClient.getCompanyHiring(),
-            apiClient.getSalaryStats()
-        ]);
+        // Load all required data one by one to handle potential issues
+        const topDomainsResponse = await apiClient.getTopDomains().catch(err => {
+            console.error("Error fetching top domains:", err);
+            return { status: 'error', message: err.message };
+        });
+        
+        const salaryRangeResponse = await apiClient.getSalaryRange().catch(err => {
+            console.error("Error fetching salary ranges:", err);
+            return { status: 'error', message: err.message };
+        });
+        
+        const locationResponse = await apiClient.getJobsByCity().catch(err => {
+            console.error("Error fetching location data:", err);
+            return { status: 'error', message: err.message };
+        });
+        
+        const companyHiringResponse = await apiClient.getCompanyHiring().catch(err => {
+            console.error("Error fetching company hiring data:", err);
+            return { status: 'error', message: err.message };
+        });
+        
+        const salaryStatsResponse = await apiClient.getSalaryStats().catch(err => {
+            console.error("Error fetching salary stats:", err);
+            return { status: 'error', message: err.message };
+        });
         
         // Check if any requests failed
-        if (topDomainsResponse.status === 'error' || 
-            salaryRangeResponse.status === 'error' || 
-            locationResponse.status === 'error' ||
-            companyHiringResponse.status === 'error' ||
-            salaryStatsResponse.status === 'error') {
-            throw new Error('One or more API requests failed');
+        if (topDomainsResponse.status === 'error') {
+            console.error("Top domains error:", topDomainsResponse.message);
+        } else {
+            renderDomainDemandChart(topDomainsResponse.data);
         }
         
-        // Render charts and update UI elements
-        renderDomainDemandChart(topDomainsResponse.data);
-        renderSalaryDistributionChart(salaryRangeResponse.data);
-        renderLocationDistributionChart(locationResponse.data);
-        updateTopCompaniesTable(companyHiringResponse.data);
-        updateStatsOverview(topDomainsResponse.data, locationResponse.data, salaryStatsResponse.data);
-        updateQuickInsights(topDomainsResponse.data, salaryStatsResponse.data, locationResponse.data);
+        if (salaryRangeResponse.status === 'error') {
+            console.error("Salary range error:", salaryRangeResponse.message);
+        } else {
+            renderSalaryDistributionChart(salaryRangeResponse.data);
+        }
+        
+        if (locationResponse.status === 'error') {
+            console.error("Location data error:", locationResponse.message);
+        } else {
+            renderLocationDistributionChart(locationResponse.data);
+        }
+        
+        if (companyHiringResponse.status === 'error') {
+            console.error("Company hiring error:", companyHiringResponse.message);
+        } else {
+            updateTopCompaniesTable(companyHiringResponse.data);
+        }
+        
+        if (salaryStatsResponse.status === 'error') {
+            console.error("Salary stats error:", salaryStatsResponse.message);
+        } else if (locationResponse.status === 'success' && topDomainsResponse.status === 'success') {
+            updateStatsOverview(topDomainsResponse.data, locationResponse.data, salaryStatsResponse.data);
+            updateQuickInsights(topDomainsResponse.data, salaryStatsResponse.data, locationResponse.data);
+        }
         
         // Hide loading state
         hideLoadingState();

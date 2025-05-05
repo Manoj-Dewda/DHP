@@ -330,12 +330,22 @@ async function handleDomainSelectionChange(event) {
  */
 async function updateDomainComparisonChart() {
     try {
+        // Show a loading indicator in the chart area
+        const chartContainer = document.getElementById('domainComparisonChart').parentElement;
+        chartContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+        
         // Fetch comparison data
-        const response = await apiClient.getDomainComparison(selectedDomains);
+        const response = await apiClient.getDomainComparison(selectedDomains).catch(err => {
+            console.error("Error fetching domain comparison:", err);
+            return { status: 'error', message: err.message || 'Failed to fetch comparison data' };
+        });
         
         if (response.status === 'error') {
             throw new Error(response.message);
         }
+        
+        // Clear loading indicator and restore canvas
+        chartContainer.innerHTML = '<canvas id="domainComparisonChart"></canvas>';
         
         // Get canvas context
         const ctx = document.getElementById('domainComparisonChart').getContext('2d');
@@ -364,83 +374,82 @@ async function updateDomainComparisonChart() {
             ]
         };
         
-        // Create or update chart
-        if (domainComparisonChart) {
-            domainComparisonChart.data = comparisonData;
-            domainComparisonChart.update();
-        } else {
-            domainComparisonChart = new Chart(ctx, {
-                type: 'bar',
-                data: comparisonData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const dataset = context.dataset;
-                                    const value = context.parsed.y;
-                                    if (dataset.label === 'Average Salary (₹)') {
-                                        return `${dataset.label}: ₹${value.toLocaleString()}`;
-                                    }
-                                    return `${dataset.label}: ${value}`;
+        // Create new chart instance
+        domainComparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: comparisonData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const dataset = context.dataset;
+                                const value = context.parsed.y;
+                                if (dataset.label === 'Average Salary (₹)') {
+                                    return `${dataset.label}: ₹${value.toLocaleString()}`;
                                 }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#f8f9fa'
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: {
-                                display: true,
-                                text: 'Salary (₹)',
-                                color: '#f8f9fa'
-                            },
-                            ticks: {
-                                color: '#f8f9fa',
-                                callback: function(value) {
-                                    return `₹${value.toLocaleString()}`;
-                                }
-                            }
-                        },
-                        y1: {
-                            grid: {
-                                drawOnChartArea: false
-                            },
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'Job Count',
-                                color: '#f8f9fa'
-                            },
-                            ticks: {
-                                color: '#f8f9fa'
+                                return `${dataset.label}: ${value}`;
                             }
                         }
                     }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#f8f9fa'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Salary (₹)',
+                            color: '#f8f9fa'
+                        },
+                        ticks: {
+                            color: '#f8f9fa',
+                            callback: function(value) {
+                                return `₹${value.toLocaleString()}`;
+                            }
+                        }
+                    },
+                    y1: {
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Job Count',
+                            color: '#f8f9fa'
+                        },
+                        ticks: {
+                            color: '#f8f9fa'
+                        }
+                    }
                 }
-            });
-        }
+            }
+        });
         
     } catch (error) {
         console.error('Error updating domain comparison chart:', error);
-        showErrorState('Failed to update domain comparison. Please try again.');
+        // Display error message in the chart area
+        const chartContainer = document.getElementById('domainComparisonChart').parentElement;
+        chartContainer.innerHTML = `<div class="alert alert-danger h-100 d-flex align-items-center justify-content-center">
+            <i class="fas fa-exclamation-triangle me-2"></i> Failed to update comparison: ${error.message}
+        </div>`;
     }
 }
 

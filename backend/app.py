@@ -165,14 +165,20 @@ def get_domain_comparison():
         # Filter data for the specified domains
         filtered_data = data[data['Job Title'].isin(domains)]
         
-        # Group by job title and calculate stats
+        # Group by job title and calculate stats - use size() instead of count() for job count
         comparison = filtered_data.groupby('Job Title').agg({
             'avg_salary': 'mean',
             'min_salary': 'mean',  # Average of minimum salaries
             'max_salary': 'mean',  # Average of maximum salaries
-            'Job Title': 'count'   # Count of jobs
         }).reset_index()
         
+        # Count jobs separately
+        job_counts = filtered_data.groupby('Job Title').size().reset_index(name='count')
+        
+        # Merge the count with the other stats
+        comparison = comparison.merge(job_counts, on='Job Title')
+        
+        # Rename columns
         comparison.columns = ['domain', 'avg_salary', 'avg_min_salary', 'avg_max_salary', 'count']
         
         return jsonify({
