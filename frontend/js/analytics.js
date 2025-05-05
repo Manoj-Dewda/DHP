@@ -109,7 +109,8 @@ async function initLocationDistributionChart() {
     try {
         Utils.showLoading('locationChartLoader');
         
-        const data = await Utils.fetchData('/api/jobs-by-city');
+        const response = await apiClient.getJobsByCity();
+        const data = response.status === 'success' ? response.data : [];
         
         if (data && data.length > 0) {
             const ctx = document.getElementById('locationDistributionChart').getContext('2d');
@@ -176,7 +177,8 @@ async function updateLocationTable(locationData) {
         
         if (tableBody && locationData && locationData.length > 0) {
             // Get filtered data to calculate average salary per location
-            const filteredData = await Utils.fetchData('/filter-data');
+            const filteredResponse = await apiClient.getFilteredData();
+            const filteredData = filteredResponse.status === 'success' ? filteredResponse.data : [];
             
             // Create a map of location to average salary
             const locationSalaryMap = new Map();
@@ -404,7 +406,8 @@ async function initCompanyHiringChart() {
     try {
         Utils.showLoading('companyChartLoader');
         
-        const data = await Utils.fetchData('/company-hiring');
+        const response = await apiClient.getCompanyHiring();
+        const data = response.status === 'success' ? response.data : [];
         
         if (data && data.length > 0) {
             const ctx = document.getElementById('companyHiringChart').getContext('2d');
@@ -566,7 +569,8 @@ async function updateCompanyTable(companyData) {
 async function loadSalaryStats() {
     try {
         // Fetch salary insights data
-        const salaryInsights = await Utils.fetchData('/salary-insights');
+        const response = await apiClient.getSalaryInsights();
+        const salaryInsights = response.status === 'success' ? response.data : [];
         
         if (salaryInsights && salaryInsights.length > 0) {
             // Sort by avg_salary
