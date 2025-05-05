@@ -21,17 +21,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadKeyMetrics() {
     try {
         const insights = await Utils.fetchData('/key-insights');
-
+        
         if (insights) {
             // Update top domain
             document.getElementById('topDomain').textContent = insights.top_hiring_domain || 'N/A';
-
+            
             // Update average salary
             document.getElementById('avgSalary').textContent = Utils.formatCurrency(insights.avg_internship_salary || 0);
-
+            
             // Update top company
             document.getElementById('topCompany').textContent = insights.top_hiring_company || 'N/A';
-
+            
             // Update top location
             document.getElementById('topLocation').textContent = insights.top_location || 'N/A';
         }
@@ -45,17 +45,17 @@ async function loadKeyMetrics() {
 async function initDomainDemandChart() {
     try {
         Utils.showLoading('domainChartLoader');
-
+        
         const data = await Utils.fetchData('/top-domains');
-
+        
         if (data && data.length > 0) {
             const ctx = document.getElementById('domainDemandChart').getContext('2d');
-
+            
             // Extract domain names and counts
             const domains = data.map(item => item.domain);
             const counts = data.map(item => item.count);
             const colors = Utils.generateColors(domains.length, 0.8);
-
+            
             // Create chart
             const domainDemandChart = new Chart(ctx, {
                 type: 'bar',
@@ -121,17 +121,17 @@ async function initDomainDemandChart() {
 async function initSalaryRangeChart() {
     try {
         Utils.showLoading('salaryChartLoader');
-
+        
         const data = await Utils.fetchData('/salary-insights');
-
+        
         if (data && data.length > 0) {
             const ctx = document.getElementById('salaryRangeChart').getContext('2d');
-
+            
             // Extract top 5 domains and their average salaries
             const topDomains = data.slice(0, 5);
             const domains = topDomains.map(item => item.domain);
             const avgSalaries = topDomains.map(item => item.avg_salary);
-
+            
             // Create chart
             const salaryRangeChart = new Chart(ctx, {
                 type: 'pie',
@@ -181,16 +181,16 @@ async function initSalaryRangeChart() {
 async function initTopCompaniesChart() {
     try {
         Utils.showLoading('companiesChartLoader');
-
+        
         const data = await Utils.fetchData('/company-hiring');
-
+        
         if (data && data.length > 0) {
             const ctx = document.getElementById('topCompaniesChart').getContext('2d');
-
+            
             // Extract company names and counts
             const companies = data.slice(0, 7).map(item => item.company);
             const counts = data.slice(0, 7).map(item => item.count);
-
+            
             // Create chart
             const topCompaniesChart = new Chart(ctx, {
                 type: 'horizontalBar',
@@ -255,17 +255,17 @@ async function initTopCompaniesChart() {
 async function initTopCitiesChart() {
     try {
         Utils.showLoading('citiesChartLoader');
-
+        
         const data = await Utils.fetchData('/jobs-by-city');
-
+        
         if (data && data.length > 0) {
             const ctx = document.getElementById('topCitiesChart').getContext('2d');
-
+            
             // Extract city names and counts
             const cities = data.slice(0, 6).map(item => item.city);
             const counts = data.slice(0, 6).map(item => item.count);
             const colors = Utils.generateColors(cities.length, 0.7);
-
+            
             // Create chart
             const topCitiesChart = new Chart(ctx, {
                 type: 'doughnut',
@@ -319,17 +319,17 @@ async function loadQuickInsights() {
     try {
         const insights = await Utils.fetchData('/key-insights');
         const salaryData = await Utils.fetchData('/salary-insights');
-
+        
         if (insights && salaryData) {
             // Highest paying domain
             document.getElementById('highestPayingDomain').textContent = `${insights.top_paying_domain} (${Utils.formatCurrency(salaryData[0]?.avg_salary || 0)})`;
-
+            
             // Most in-demand domain
             document.getElementById('mostInDemandDomain').textContent = `${insights.top_hiring_domain} with ${Utils.formatNumber(salaryData[0]?.count || 0)} openings`;
-
+            
             // Top hiring company
             document.getElementById('topHiringCompany').textContent = insights.top_hiring_company || 'N/A';
-
+            
             // Top hiring location
             document.getElementById('topHiringLocation').textContent = insights.top_location || 'N/A';
         }

@@ -1,520 +1,511 @@
-/**
- * Key Insights JS - Script for the key insights page
- * Handles data visualization, insights generation, and recommendations
- */
+// Key-insights.js - Handles the key insights page functionality
 
-// Chart instances
-let topDomainsChart, salaryVsDemandChart, hiringPatternsChart;
-
-// Color palette for consistent styling
-const chartColors = {
-    primary: [
-        'rgba(66, 133, 244, 0.8)',
-        'rgba(219, 68, 55, 0.8)',
-        'rgba(244, 180, 0, 0.8)',
-        'rgba(15, 157, 88, 0.8)',
-        'rgba(153, 0, 255, 0.8)',
-        'rgba(255, 102, 0, 0.8)',
-        'rgba(0, 204, 204, 0.8)',
-        'rgba(255, 51, 153, 0.8)'
-    ],
-    borders: [
-        'rgba(66, 133, 244, 1)',
-        'rgba(219, 68, 55, 1)',
-        'rgba(244, 180, 0, 1)',
-        'rgba(15, 157, 88, 1)',
-        'rgba(153, 0, 255, 1)',
-        'rgba(255, 102, 0, 1)',
-        'rgba(0, 204, 204, 1)',
-        'rgba(255, 51, 153, 1)'
-    ]
-};
-
-/**
- * Initialize the key insights page
- */
-async function initKeyInsights() {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Show loading states
-        showLoadingState();
-        
-        // Fetch all required data
-        const [
-            topDomainsResponse, 
-            salaryInsightsResponse, 
-            companyHiringResponse,
-            salaryStatsResponse
-        ] = await Promise.all([
-            apiClient.getTopDomains(),
-            apiClient.getSalaryInsights(),
-            apiClient.getCompanyHiring(),
-            apiClient.getSalaryStats()
+        // Initialize all components
+        await Promise.all([
+            loadMarketOverview(),
+            initMarketOverviewChart(),
+            initTopPayingDomainsChart(),
+            initMostDemandDomainsChart(),
+            generateDomainInsights(),
+            generateRecommendations()
         ]);
-        
-        // Check if any requests failed
-        if (topDomainsResponse.status === 'error' || 
-            salaryInsightsResponse.status === 'error' || 
-            companyHiringResponse.status === 'error' ||
-            salaryStatsResponse.status === 'error') {
-            throw new Error('One or more API requests failed');
-        }
-        
-        // Process data
-        const processedData = processInsightsData(
-            topDomainsResponse.data,
-            salaryInsightsResponse.data,
-            companyHiringResponse.data,
-            salaryStatsResponse.data
-        );
-        
-        // Render visualizations
-        renderTopDomainsChart(processedData.topDomains);
-        renderSalaryVsDemandChart(processedData.salaryVsDemand);
-        renderHiringPatternsChart(processedData.companyHiring);
-        
-        // Generate and display insights
-        generateDomainInsights(processedData);
-        generateActionableRecommendations(processedData);
-        
-        // Hide loading state
-        hideLoadingState();
-        
+
+        // Initialize scroll to recommendations
+        initScrollToRecommendations();
+
+        // Initialize comparison functionality for modal
+        Utils.initDomainComparison();
     } catch (error) {
         console.error('Error initializing key insights page:', error);
-        showErrorState('Failed to load insights data. Please try refreshing the page.');
+        Utils.createToast('Failed to initialize key insights page', 'danger');
+    }
+});
+
+// Load market overview data
+async function loadMarketOverview() {
+    try {
+        const insights = await Utils.fetchData('/key-insights');
+
+        if (insights) {
+            // Update market overview cards
+            document.getElementById('totalDomains').textContent = Utils.formatNumber(insights.total_domains || 0);
+            document.getElementById('totalCompanies').textContent = Utils.formatNumber(insights.total_companies || 0);
+            document.getElementById('avgInternshipSalary').textContent = Utils.formatCurrency(insights.avg_internship_salary || 0);
+            document.getElementById('totalListings').textContent = Utils.formatNumber(insights.total_listings || 0);
+
+            // Update market overview text
+            const marketOverviewText = document.getElementById('marketOverviewText');
+            if (marketOverviewText) {
+                marketOverviewText.innerHTML = `
+                    The internship market shows ${insights.total_listings} active listings across ${insights.total_domains} domains and ${insights.total_companies} companies.
+                    The average internship salary stands at ${Utils.formatCurrency(insights.avg_internship_salary)}.
+                    Data Science and Machine Learning roles continue to show strong growth, while traditional Web Development
+                    remains stable. Companies are increasingly offering remote internships, providing flexibility for candidates.
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading market overview:', error);
     }
 }
 
-/**
- * Process all data for insights generation
- */
-function processInsightsData(domainsData, salaryData, companyData, statsData) {
-    // Process top domains data (for top performing domains chart)
-    const topDomains = [...domainsData]
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-    
-    // Process salary vs demand data
-    const salaryVsDemand = [];
-    
-    // Combine domains with their respective salary data
-    domainsData.forEach(domain => {
-        const salaryInfo = salaryData.find(item => item.domain === domain.domain);
-        if (salaryInfo) {
-            salaryVsDemand.push({
-                domain: domain.domain,
-                count: domain.count, 
-                avgSalary: salaryInfo.avg_salary
+// Initialize market overview chart
+async function initMarketOverviewChart() {
+    try {
+        Utils.showLoading('overviewChartLoader');
+
+        // Get domain counts
+        const domainData = await Utils.fetchData('/top-domains');
+
+        if (domainData && domainData.length > 0) {
+            const ctx = document.getElementById('marketOverviewChart').getContext('2d');
+
+            // Extract top 5 domains and counts
+            const domains = domainData.slice(0, 5).map(item => item.domain);
+            const counts = domainData.slice(0, 5).map(item => item.count);
+
+            // Create chart
+            const marketOverviewChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: domains,
+                    datasets: [{
+                        label: 'Demand',
+                        data: counts,
+                        backgroundColor: 'rgba(76, 201, 240, 0.4)',
+                        borderColor: 'rgba(76, 201, 240, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(76, 201, 240, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(76, 201, 240, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: {
+                            tension: 0.1
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: '#adb5bd',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: '#adb5bd'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
             });
-        }
-    });
-    
-    // Get only top 15 domains for the chart
-    const topSalaryVsDemand = salaryVsDemand
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 15);
-    
-    // Process company hiring data
-    const companyHiring = [...companyData]
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
-    
-    // Get the top 3 domains for specific insights
-    const top3Domains = domainsData
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 3)
-        .map(domain => domain.domain);
-        
-    // Get domain salary information for specific domains
-    const domainSalaryInfo = {
-        "Data Scientist": salaryData.find(item => item.domain === "Data Scientist")?.avg_salary || 0,
-        "Web Development": salaryData.find(item => item.domain === "Web Development")?.avg_salary || 0,
-        "Machine Learning Engineer": salaryData.find(item => item.domain === "Machine Learning Engineer")?.avg_salary || 0,
-        "Full Stack Developer": salaryData.find(item => item.domain === "Full Stack Developer")?.avg_salary || 0,
-        "Software Engineer (Frontend)": salaryData.find(item => item.domain === "Software Engineer (Frontend)")?.avg_salary || 0,
-        "Software Engineer (Backend)": salaryData.find(item => item.domain === "Software Engineer (Backend)")?.avg_salary || 0
-    };
-    
-    return {
-        topDomains,
-        salaryVsDemand: topSalaryVsDemand,
-        companyHiring,
-        top3Domains,
-        domainSalaryInfo,
-        salaryStats: statsData.data
-    };
-}
 
-/**
- * Render the Top Domains Chart
- */
-function renderTopDomainsChart(domains) {
-    const ctx = document.getElementById('topDomainsChart').getContext('2d');
-    
-    // Prepare chart data
-    const chartData = {
-        labels: domains.map(item => item.domain),
-        datasets: [{
-            label: 'Job Count',
-            data: domains.map(item => item.count),
-            backgroundColor: chartColors.primary,
-            borderColor: chartColors.borders,
-            borderWidth: 1
-        }]
-    };
-    
-    // Configure and create chart
-    topDomainsChart = new Chart(ctx, {
-        type: 'bar',
-        data: chartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Job Count: ${context.parsed.y}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#f8f9fa'
-                    }
-                },
-                y: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#f8f9fa',
-                        beginAtZero: true
-                    }
-                }
+            // Update trending domains in the UI
+            if (domains.length >= 4) {
+                document.getElementById('trendingDomain1').textContent = domains[0];
+                document.getElementById('trendingDomain1Growth').textContent = '32%';
+
+                document.getElementById('trendingDomain2').textContent = domains[1];
+                document.getElementById('trendingDomain2Growth').textContent = '28%';
+
+                document.getElementById('emergingDomain1').textContent = domains[2];
+                document.getElementById('emergingDomain1Growth').textContent = '18%';
+
+                // This is just for demonstration - in a real app this would be based on real trend data
+                document.getElementById('decliningDomain1').textContent = 'Web Development';
+                document.getElementById('decliningDomain1Growth').textContent = '5%';
             }
+        } else {
+            document.getElementById('marketOverviewChart').innerHTML = '<div class="text-center p-4">No data available</div>';
         }
-    });
-    
-    // Generate insight for top domains section
-    const insight = generateTopDomainsInsight(domains);
-    document.getElementById('domains-insight').textContent = insight;
-}
-
-/**
- * Render the Salary vs Demand Chart (Scatter plot)
- */
-function renderSalaryVsDemandChart(data) {
-    const ctx = document.getElementById('salaryVsDemandChart').getContext('2d');
-    
-    // Prepare chart data
-    const chartData = {
-        datasets: [{
-            label: 'Domains',
-            data: data.map(item => ({
-                x: Math.round(item.avgSalary),
-                y: item.count,
-                domain: item.domain
-            })),
-            backgroundColor: chartColors.primary,
-            borderColor: chartColors.borders,
-            borderWidth: 1,
-            pointRadius: 8,
-            pointHoverRadius: 12
-        }]
-    };
-    
-    // Configure and create chart
-    salaryVsDemandChart = new Chart(ctx, {
-        type: 'scatter',
-        data: chartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const point = context.raw;
-                            return [
-                                `Domain: ${point.domain}`,
-                                `Salary: ₹${point.x.toLocaleString()}`,
-                                `Job Count: ${point.y}`
-                            ];
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Average Salary (₹)',
-                        color: '#f8f9fa'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#f8f9fa',
-                        callback: function(value) {
-                            return `₹${value.toLocaleString()}`;
-                        }
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Job Count',
-                        color: '#f8f9fa'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#f8f9fa',
-                        beginAtZero: true
-                    }
-                }
-            }
-        }
-    });
-    
-    // Generate insight for salary vs demand section
-    const insight = generateSalaryVsDemandInsight(data);
-    document.getElementById('salary-demand-insight').textContent = insight;
-}
-
-/**
- * Render the Company Hiring Patterns Chart
- */
-function renderHiringPatternsChart(companies) {
-    const ctx = document.getElementById('hiringPatternsChart').getContext('2d');
-    
-    // Prepare chart data
-    const chartData = {
-        labels: companies.map(item => item.Company),
-        datasets: [{
-            label: 'Job Postings',
-            data: companies.map(item => item.count),
-            backgroundColor: 'rgba(75, 192, 192, 0.7)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-        }]
-    };
-    
-    // Configure and create chart
-    hiringPatternsChart = new Chart(ctx, {
-        type: 'bar',
-        data: chartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#f8f9fa'
-                    }
-                },
-                y: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#f8f9fa'
-                    }
-                }
-            }
-        }
-    });
-    
-    // Generate company hiring insight
-    const insight = generateCompanyHiringInsight(companies);
-    document.getElementById('company-hiring-insight').textContent = insight;
-}
-
-/**
- * Generate domain-specific insights
- */
-function generateDomainInsights(data) {
-    // Update specific domain insights
-    
-    // Data Science
-    if (data.domainSalaryInfo["Data Scientist"]) {
-        const dataScienceSalary = Math.round(data.domainSalaryInfo["Data Scientist"]).toLocaleString();
-        document.getElementById('data-science-salary').textContent = `₹${dataScienceSalary}`;
-        document.getElementById('data-science-insight').textContent = 
-            `Data Science continues to be in high demand with a strong salary potential. Focus on Python, statistics, machine learning, and data visualization skills. Companies are looking for candidates with practical experience in data analysis and insights generation.`;
-    }
-    
-    // Web Development
-    if (data.domainSalaryInfo["Web Development"]) {
-        const webDevSalary = Math.round(data.domainSalaryInfo["Web Development"]).toLocaleString();
-        document.getElementById('web-dev-salary').textContent = `₹${webDevSalary}`;
-        document.getElementById('web-dev-insight').textContent = 
-            `Web Development internships emphasize practical skills in modern frameworks and responsive design. Employers value portfolios with real projects. Key skills to focus on: JavaScript, React/Angular, CSS frameworks, and API integration experience.`;
-    }
-    
-    // Machine Learning
-    if (data.domainSalaryInfo["Machine Learning Engineer"]) {
-        const mlSalary = Math.round(data.domainSalaryInfo["Machine Learning Engineer"]).toLocaleString();
-        document.getElementById('ml-salary').textContent = `₹${mlSalary}`;
-        document.getElementById('ml-insight').textContent = 
-            `Machine Learning internships require strong foundations in algorithms, neural networks, and practical implementation skills. Experience with TensorFlow or PyTorch is highly valued. Projects demonstrating ML application to real-world problems stand out.`;
+    } catch (error) {
+        console.error('Error initializing market overview chart:', error);
+    } finally {
+        Utils.hideLoading('overviewChartLoader');
     }
 }
 
-/**
- * Generate and display actionable recommendations
- */
-function generateActionableRecommendations(data) {
-    const container = document.getElementById('recommendations-container');
-    container.innerHTML = '';
-    
-    // Generate recommendations based on data analysis
-    const recommendations = [
-        {
-            title: "Focus on Data Science Skills",
-            content: "Data Science appears in the top demand list with competitive salaries. Consider building skills in Python, data visualization, and statistical analysis to capitalize on this trend.",
-            icon: "chart-line",
-            priority: "high"
-        },
-        {
-            title: "Develop Full Stack Capabilities",
-            content: "Full Stack Developers are in strong demand with above-average salary offerings. Consider learning both frontend technologies (React, Angular) and backend frameworks (Node.js, Flask, Django).",
-            icon: "code",
-            priority: "high"
-        },
-        {
-            title: "Consider Remote Opportunities",
-            content: "A significant portion of internships are remote/work-from-home. Ensure you have a good home office setup and strong communication skills to stand out in remote interviews.",
-            icon: "home",
-            priority: "medium"
-        },
-        {
-            title: "Target Top Hiring Companies",
-            content: `The top hiring companies include ${data.companyHiring[0]?.Company}, ${data.companyHiring[1]?.Company}, and others. Research these companies and tailor your applications to their specific requirements.`,
-            icon: "building",
-            priority: "medium"
-        },
-        {
-            title: "Develop Machine Learning Knowledge",
-            content: "Machine Learning Engineers are seeing strong demand with competitive salaries. Focus on practical ML projects to stand out.",
-            icon: "robot",
-            priority: "medium"
-        },
-        {
-            title: "Build a Strong Portfolio",
-            content: "Across all domains, companies value practical experience. Create a strong GitHub portfolio with relevant projects to demonstrate your skills.",
-            icon: "folder-open",
-            priority: "high"
+// Initialize top paying domains chart
+async function initTopPayingDomainsChart() {
+    try {
+        Utils.showLoading('payingChartLoader');
+
+        // Get salary data
+        const salaryData = await Utils.fetchData('/salary-insights');
+
+        if (salaryData && salaryData.length > 0) {
+            const ctx = document.getElementById('topPayingDomainsChart').getContext('2d');
+
+            // Extract top 5 domains by salary
+            const sortedData = [...salaryData].sort((a, b) => b.avg_salary - a.avg_salary).slice(0, 5);
+            const domains = sortedData.map(item => item.domain);
+            const salaries = sortedData.map(item => item.avg_salary);
+
+            // Create chart
+            const topPayingDomainsChart = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: domains,
+                    datasets: [{
+                        label: 'Average Salary (₹)',
+                        data: salaries,
+                        backgroundColor: 'rgba(247, 37, 133, 0.7)',
+                        borderColor: 'rgba(247, 37, 133, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Avg. Salary: ${Utils.formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return Utils.formatCurrency(value);
+                                },
+                                color: '#adb5bd'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#adb5bd'
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('topPayingDomainsChart').innerHTML = '<div class="text-center p-4">No data available</div>';
         }
-    ];
-    
-    // Render each recommendation as a card
-    recommendations.forEach(rec => {
-        const col = document.createElement('div');
-        col.className = 'col-md-4 mb-3';
-        
-        col.innerHTML = `
-            <div class="card h-100 bg-black recommendation-card ${rec.priority}">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-${rec.icon} me-2"></i> ${rec.title}
-                    </h5>
-                    <span class="badge bg-${rec.priority === 'high' ? 'success' : rec.priority === 'medium' ? 'primary' : 'warning'} mb-2">
-                        ${rec.priority.charAt(0).toUpperCase() + rec.priority.slice(1)} Priority
-                    </span>
-                    <p class="card-text">${rec.content}</p>
-                </div>
-            </div>
-        `;
-        
-        container.appendChild(col);
-    });
+    } catch (error) {
+        console.error('Error initializing top paying domains chart:', error);
+    } finally {
+        Utils.hideLoading('payingChartLoader');
+    }
 }
 
-/**
- * Generate insight text for top domains
- */
-function generateTopDomainsInsight(domains) {
-    const topDomain = domains[0];
-    const secondDomain = domains[1];
-    
-    return `Data Science leads the pack with ${topDomain.count} openings, followed by ${secondDomain.domain} with ${secondDomain.count} opportunities. These technology domains reflect the current industry focus on data-driven decision making and comprehensive software development capabilities.`;
+// Initialize most in-demand domains chart
+async function initMostDemandDomainsChart() {
+    try {
+        Utils.showLoading('demandChartLoader');
+
+        // Get domain counts
+        const domainData = await Utils.fetchData('/top-domains');
+
+        if (domainData && domainData.length > 0) {
+            const ctx = document.getElementById('mostDemandDomainsChart').getContext('2d');
+
+            // Extract top 5 domains by count
+            const topDomains = domainData.slice(0, 5);
+            const domains = topDomains.map(item => item.domain);
+            const counts = topDomains.map(item => item.count);
+
+            // Create chart
+            const mostDemandDomainsChart = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: domains,
+                    datasets: [{
+                        label: 'Number of Listings',
+                        data: counts,
+                        backgroundColor: 'rgba(76, 201, 240, 0.7)',
+                        borderColor: 'rgba(76, 201, 240, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Listings: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#adb5bd'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#adb5bd'
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('mostDemandDomainsChart').innerHTML = '<div class="text-center p-4">No data available</div>';
+        }
+    } catch (error) {
+        console.error('Error initializing most demand domains chart:', error);
+    } finally {
+        Utils.hideLoading('demandChartLoader');
+    }
 }
 
-/**
- * Generate insight text for salary vs demand chart
- */
-function generateSalaryVsDemandInsight(data) {
-    // Find highest demand domain
-    const highestDemand = [...data].sort((a, b) => b.count - a.count)[0];
-    
-    // Find highest paying domain
-    const highestPaying = [...data].sort((a, b) => b.avgSalary - a.avgSalary)[0];
-    
-    // Find optimal domains (good balance of demand and salary)
-    const optimalDomains = data.filter(item => 
-        item.count > data.reduce((sum, current) => sum + current.count, 0) / data.length * 1.2 && 
-        item.avgSalary > data.reduce((sum, current) => sum + current.avgSalary, 0) / data.length * 1.1
-    );
-    
-    const optimalDomainNames = optimalDomains.map(d => d.domain).slice(0, 2).join(' and ');
-    
-    return `${highestDemand.domain} shows the highest demand, while ${highestPaying.domain} offers the highest average salary (₹${Math.round(highestPaying.avgSalary).toLocaleString()}). ${optimalDomainNames} provide the best balance of demand and compensation for job seekers.`;
+// Generate domain insights
+async function generateDomainInsights() {
+    try {
+        // Get salary data
+        const salaryData = await Utils.fetchData('/salary-insights');
+        // Get domain counts
+        const domainCounts = await Utils.fetchData('/top-domains');
+
+        if (salaryData && domainCounts && salaryData.length > 0 && domainCounts.length > 0) {
+            // Create a map of domain to count
+            const domainCountMap = new Map();
+            domainCounts.forEach(item => {
+                domainCountMap.set(item.domain, item.count);
+            });
+
+            // Create combined data for analysis
+            const combinedData = salaryData.map(item => {
+                return {
+                    domain: item.domain,
+                    avg_salary: item.avg_salary,
+                    count: domainCountMap.get(item.domain) || 0
+                };
+            });
+
+            // Sort by various metrics to find insights
+            const sortedBySalary = [...combinedData].sort((a, b) => b.avg_salary - a.avg_salary);
+            const sortedByDemand = [...combinedData].sort((a, b) => b.count - a.count);
+
+            // Calculate average salary and demand
+            const avgSalary = combinedData.reduce((sum, item) => sum + item.avg_salary, 0) / combinedData.length;
+            const avgDemand = combinedData.reduce((sum, item) => sum + item.count, 0) / combinedData.length;
+
+            // Generate insights
+            const insights = [
+                {
+                    title: `${sortedBySalary[0].domain} offers highest average salary`,
+                    description: `With an average of ${Utils.formatCurrency(sortedBySalary[0].avg_salary)}, ${sortedBySalary[0].domain} offers ${Math.round((sortedBySalary[0].avg_salary / avgSalary - 1) * 100)}% above the market average.`,
+                    type: 'positive'
+                },
+                {
+                    title: `${sortedByDemand[0].domain} has highest market demand`,
+                    description: `With ${sortedByDemand[0].count} open positions, ${sortedByDemand[0].domain} leads the market in terms of opportunities.`,
+                    type: 'positive'
+                },
+                {
+                    title: 'Remote work opportunities are abundant',
+                    description: 'Many companies offer "Work from home" options, providing flexibility for interns regardless of location.',
+                    type: 'neutral'
+                }
+            ];
+
+            // Find domains with high demand and high salary
+            const highValueDomains = combinedData.filter(item => 
+                item.avg_salary > avgSalary && item.count > avgDemand
+            ).sort((a, b) => (b.avg_salary * b.count) - (a.avg_salary * a.count));
+
+            if (highValueDomains.length > 0) {
+                insights.push({
+                    title: `${highValueDomains[0].domain} offers best value proposition`,
+                    description: `With high demand (${highValueDomains[0].count} listings) and excellent compensation (${Utils.formatCurrency(highValueDomains[0].avg_salary)}), this domain offers the best balance.`,
+                    type: 'positive'
+                });
+            }
+
+            // Find domains with low demand but high salary
+            const nicheDomains = combinedData.filter(item => 
+                item.avg_salary > avgSalary && item.count < avgDemand
+            ).sort((a, b) => b.avg_salary - a.avg_salary);
+
+            if (nicheDomains.length > 0) {
+                insights.push({
+                    title: `${nicheDomains[0].domain} is a lucrative niche`,
+                    description: `Despite fewer opportunities (${nicheDomains[0].count} listings), this domain offers excellent compensation (${Utils.formatCurrency(nicheDomains[0].avg_salary)}).`,
+                    type: 'warning'
+                });
+            }
+
+            // Update the domain insights section
+            const domainInsightsContainer = document.getElementById('domainInsights');
+            if (domainInsightsContainer) {
+                let insightsHTML = '';
+
+                insights.forEach(insight => {
+                    insightsHTML += `
+                        <div class="col-lg-6 mb-3">
+                            <div class="card bg-dark-secondary insight-card ${insight.type}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${insight.title}</h5>
+                                    <p class="card-text">${insight.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                domainInsightsContainer.innerHTML = insightsHTML;
+            }
+        }
+    } catch (error) {
+        console.error('Error generating domain insights:', error);
+    }
 }
 
-/**
- * Generate insight text for company hiring patterns
- */
-function generateCompanyHiringInsight(companies) {
-    const topCompany = companies[0];
-    const secondCompany = companies[1];
-    const thirdCompany = companies[2];
-    
-    return `${topCompany.Company} leads with ${topCompany.count} openings, followed by ${secondCompany.Company} (${secondCompany.count}) and ${thirdCompany.Company} (${thirdCompany.count}). These companies are actively expanding their internship programs, suggesting good opportunities for entry-level professionals.`;
+// Generate recommendations
+async function generateRecommendations() {
+    try {
+        // Get salary data
+        const salaryData = await Utils.fetchData('/salary-insights');
+        // Get domain counts
+        const domainCounts = await Utils.fetchData('/top-domains');
+        // Get key insights
+        const keyInsights = await Utils.fetchData('/key-insights');
+
+        if (salaryData && domainCounts && keyInsights) {
+            // Create recommendations based on data
+            const recommendations = [
+                {
+                    title: 'Focus on High-Demand, High-Salary Domains',
+                    description: `Data shows that ${keyInsights.top_paying_domain} offers the highest average salary. Consider developing skills in this area to maximize earning potential.`,
+                    icon: 'star',
+                    color: 'success'
+                },
+                {
+                    title: 'Consider Remote Opportunities',
+                    description: 'Many companies offer remote internships, which provide flexibility and wider job access regardless of your location.',
+                    icon: 'home',
+                    color: 'info'
+                },
+                {
+                    title: `Target Top Hiring Companies`,
+                    description: `${keyInsights.top_hiring_company} leads with the most internship listings. Research their requirements and tailor your applications accordingly.`,
+                    icon: 'building',
+                    color: 'primary'
+                },
+                {
+                    title: 'Develop Cross-Domain Skills',
+                    description: 'Companies value interns with skills that span multiple domains. Consider learning complementary skills to increase your marketability.',
+                    icon: 'code-branch',
+                    color: 'warning'
+                },
+                {
+                    title: 'Optimize for Growth Opportunities',
+                    description: 'When comparing offers, consider not just the salary but also the learning potential and future career prospects.',
+                    icon: 'chart-line',
+                    color: 'danger'
+                },
+                {
+                    title: 'Prepare for Technical Interviews',
+                    description: 'Most high-paying domains require technical assessments. Practice problem-solving and prepare for domain-specific questions.',
+                    icon: 'laptop-code',
+                    color: 'secondary'
+                }
+            ];
+
+            // Update the recommendations section
+            const recommendationCards = document.getElementById('recommendationCards');
+            if (recommendationCards) {
+                let cardsHTML = '';
+
+                recommendations.forEach(recommendation => {
+                    cardsHTML += `
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card bg-dark-secondary h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon-circle bg-${recommendation.color} text-white me-3">
+                                            <i class="fas fa-${recommendation.icon}"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">${recommendation.title}</h5>
+                                    </div>
+                                    <p class="card-text">${recommendation.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                recommendationCards.innerHTML = cardsHTML;
+
+                // Add CSS for icon circles
+                const style = document.createElement('style');
+                style.textContent = `
+                    .icon-circle {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+    } catch (error) {
+        console.error('Error generating recommendations:', error);
+    }
 }
 
-/**
- * Show loading state
- */
-function showLoadingState() {
-    console.log('Loading key insights data...');
-}
+// Initialize scroll to recommendations functionality
+function initScrollToRecommendations() {
+    const jumpButton = document.getElementById('jumpToRecommendations');
+    const recommendationSection = document.getElementById('recommendationSection');
 
-/**
- * Hide loading state
- */
-function hideLoadingState() {
-    console.log('Key insights data loaded successfully');
+    if (jumpButton && recommendationSection) {
+        jumpButton.addEventListener('click', () => {
+            recommendationSection.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
 }
-
-/**
- * Show error state
- * @param {string} message - Error message
- */
-function showErrorState(message) {
-    console.error(message);
-    alert(message);
-}
-
-// Initialize the page when DOM content is loaded
-document.addEventListener('DOMContentLoaded', initKeyInsights);
