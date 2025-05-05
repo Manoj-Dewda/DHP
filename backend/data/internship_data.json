@@ -1,0 +1,65 @@
+{
+  "domains": [
+    {"domain": "Data Scientist", "count": 45},
+    {"domain": "Full Stack Developer", "count": 18},
+    {"domain": "Web Development", "count": 17},
+    {"domain": "Machine Learning Engineer", "count": 17},
+    {"domain": "Software Engineer (Frontend)", "count": 10},
+    {"domain": "Software Engineer (Backend)", "count": 8},
+    {"domain": "QA Engineer", "count": 8},
+    {"domain": "Mobile Developer", "count": 4},
+    {"domain": "DevOps Engineer", "count": 4},
+    {"domain": "Android Developer", "count": 3}
+  ],
+  "salary_insights": [
+    {"domain": "Software Engineer (Backend)", "avg_salary": 13562.5},
+    {"domain": "Software Engineer (Frontend)", "avg_salary": 10055.25},
+    {"domain": "Data Scientist", "avg_salary": 9950.0},
+    {"domain": "Full Stack Developer", "avg_salary": 9388.88888888889},
+    {"domain": "DevOps Engineer", "avg_salary": 8250.0},
+    {"domain": "QA Engineer", "avg_salary": 10687.5},
+    {"domain": "Mobile Developer", "avg_salary": 10250.5},
+    {"domain": "Machine Learning Engineer", "avg_salary": 10559.38235294118},
+    {"domain": "Web Development", "avg_salary": 9985.294117647059},
+    {"domain": "Android Developer", "avg_salary": 8000.0}
+  ],
+  "location_distribution": [
+    {"city": "Pune", "count": 20},
+    {"city": "Delhi", "count": 18},
+    {"city": "Mumbai", "count": 15},
+    {"city": "Hyderabad", "count": 14},
+    {"city": "Bangalore", "count": 10},
+    {"city": "Ahmedabad", "count": 9},
+    {"city": "Gurgaon", "count": 8},
+    {"city": "Lucknow", "count": 6},
+    {"city": "Chennai", "count": 5},
+    {"city": "Noida", "count": 5},
+    {"city": "Work from home", "count": 84}
+  ],
+  "company_hiring": [
+    {"Company": "Brave Artificial Intelligence Laboratory", "count": 5},
+    {"Company": "Rythukart Private Limited", "count": 5},
+    {"Company": "Maxgen Technologies Private Limited", "count": 5},
+    {"Company": "Bezt Labs", "count": 4},
+    {"Company": "CollegeTips Ed Tech Media Private Limited", "count": 3},
+    {"Company": "SortWind Private Limited", "count": 2},
+    {"Company": "OBLYTECH INDIA PRIVATE LIMITED", "count": 2},
+    {"Company": "Loan For India", "count": 2},
+    {"Company": "Infoware", "count": 2},
+    {"Company": "Syscon Electro Tech India Private Limited", "count": 2},
+    {"Company": "EduCreative Digication (OPC) Pvt. Ltd", "count": 2},
+    {"Company": "Shrevya Technologies", "count": 2},
+    {"Company": "Pehchaan AI Technologies", "count": 2},
+    {"Company": "Attento Technologies Pvt Ltd", "count": 2},
+    {"Company": "Aaans Services Private Limited", "count": 1}
+  ],
+  "salary_ranges": [
+    {"range": "5K-10K", "count": 73},
+    {"range": "10K-15K", "count": 44},
+    {"range": "0-5K", "count": 24},
+    {"range": "15K-20K", "count": 17},
+    {"range": "25K-30K", "count": 8},
+    {"range": "20K-25K", "count": 6},
+    {"range": "30K+", "count": 2}
+  ]
+}

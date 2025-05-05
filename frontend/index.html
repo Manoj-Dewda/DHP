@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internship Insights Dashboard</title>
+    
+    <!-- Bootstrap 5 Dark Theme CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-dark text-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-black shadow-sm mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-chart-line me-2"></i>Internship Insights
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="analytics.html">
+                            <i class="fas fa-chart-bar me-1"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="key-insights.html">
+                            <i class="fas fa-lightbulb me-1"></i> Key Insights
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card bg-black shadow border-0 rounded-3 h-100">
+                    <div class="card-body p-4">
+                        <h1 class="display-5 fw-bold mb-3">Internship Market Insights</h1>
+                        <p class="lead">Discover top domains, salary trends, and opportunities in the current internship market.</p>
+                        <div class="d-flex gap-3 mt-4">
+                            <a href="analytics.html" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-chart-pie me-2"></i>Explore Analytics
+                            </a>
+                            <a href="key-insights.html" class="btn btn-outline-light rounded-pill px-4">
+                                <i class="fas fa-lightbulb me-2"></i>View Key Insights
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-gradient shadow border-0 rounded-3 h-100" style="background: linear-gradient(45deg, #4158D0, #C850C0);">
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <h3 class="card-title">Market Overview</h3>
+                            <p class="card-text">Based on <span id="total-jobs">...</span> internship opportunities</p>
+                        </div>
+                        <div class="stats-grid mt-3">
+                            <div class="stat-item">
+                                <div class="stat-value" id="avg-salary">...</div>
+                                <div class="stat-label">Avg. Salary</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="top-domain">...</div>
+                                <div class="stat-label">Top Domain</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="top-location">...</div>
+                                <div class="stat-label">Top Location</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <div class="row mb-4">
+            <!-- Domain Demand Chart -->
+            <div class="col-md-6">
+                <div class="card bg-black shadow border-0 rounded-3 h-100">
+                    <div class="card-header bg-transparent border-bottom-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-code me-2"></i>Domain Demand</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="analytics.html">View Full Analysis</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas id="domainDemandChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary Distribution Chart -->
+            <div class="col-md-6">
+                <div class="card bg-black shadow border-0 rounded-3 h-100">
+                    <div class="card-header bg-transparent border-bottom-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Salary Distribution</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="analytics.html">View Full Analysis</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas id="salaryDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <!-- Location Distribution -->
+            <div class="col-md-6">
+                <div class="card bg-black shadow border-0 rounded-3 h-100">
+                    <div class="card-header bg-transparent border-bottom-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Geographic Distribution</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="analytics.html">View Full Analysis</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas id="locationDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Companies -->
+            <div class="col-md-6">
+                <div class="card bg-black shadow border-0 rounded-3 h-100">
+                    <div class="card-header bg-transparent border-bottom-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-building me-2"></i>Top Hiring Companies</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="key-insights.html">View Company Details</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Company</th>
+                                        <th scope="col" class="text-end">Job Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top-companies-table">
+                                    <tr>
+                                        <td colspan="2" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Insights Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-black shadow border-0 rounded-3">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Insights</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100 bg-gradient text-white border-0" style="background: linear-gradient(45deg, #1e3c72, #2a5298);">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-laptop-code me-2"></i>Most In-Demand
+                                        </h5>
+                                        <p class="card-text" id="most-in-demand">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100 bg-gradient text-white border-0" style="background: linear-gradient(45deg, #457fca, #5691c8);">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-dollar-sign me-2"></i>Highest Paying
+                                        </h5>
+                                        <p class="card-text" id="highest-paying">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100 bg-gradient text-white border-0" style="background: linear-gradient(45deg, #614385, #516395);">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-map-marked-alt me-2"></i>Location Trend
+                                        </h5>
+                                        <p class="card-text" id="location-trend">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100 bg-gradient text-white border-0" style="background: linear-gradient(45deg, #8E2DE2, #4A00E0);">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-briefcase me-2"></i>Work Mode
+                                        </h5>
+                                        <p class="card-text" id="work-mode-insight">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="position-fixed bottom-0 end-0 p-4">
+            <a href="analytics.html" class="btn btn-primary rounded-circle shadow-lg" style="width: 56px; height: 56px;">
+                <i class="fas fa-chart-line" style="font-size: 1.25rem;"></i>
+            </a>
+        </div>
+    </div>
+
+    <footer class="footer mt-auto py-3 bg-black">
+        <div class="container text-center">
+            <span class="text-muted">Internship Insights Dashboard &copy; 2023</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    
+    <!-- API Client -->
+    <script src="js/api-client.js"></script>
+    
+    <!-- Dashboard Scripts -->
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

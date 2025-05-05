@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Insights - Internship Insights</title>
+    
+    <!-- Bootstrap 5 Dark Theme CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-dark text-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-black shadow-sm mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-chart-line me-2"></i>Internship Insights
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="analytics.html">
+                            <i class="fas fa-chart-bar me-1"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="key-insights.html">
+                            <i class="fas fa-lightbulb me-1"></i> Key Insights
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-black shadow border-0 rounded-3">
+                    <div class="card-body p-4">
+                        <h1 class="display-6 fw-bold mb-3">Key Insights & Recommendations</h1>
+                        <p class="lead">Actionable insights and practical recommendations for internship seekers.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Insights Section -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-4">
+                <div class="card bg-black shadow border-0 rounded-3 h-100">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-star me-2"></i>Top Performing Domains</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas id="topDomainsChart"></canvas>
+                        </div>
+                        <div class="mt-4">
+                            <h6 class="fw-bold">Key Takeaway</h6>
+                            <p class="mb-0" id="domains-insight">Loading insight...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card bg-black shadow border-0 rounded-3 h-100">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Salary vs. Demand</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas id="salaryVsDemandChart"></canvas>
+                        </div>
+                        <div class="mt-4">
+                            <h6 class="fw-bold">Key Takeaway</h6>
+                            <p class="mb-0" id="salary-demand-insight">Loading insight...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actionable Recommendations -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-black shadow border-0 rounded-3">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Actionable Recommendations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="recommendations-container">
+                            <!-- Will be populated via JavaScript -->
+                            <div class="col-12 text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hiring Patterns -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-black shadow border-0 rounded-3">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-building me-2"></i>Company Hiring Patterns</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:400px;">
+                            <canvas id="hiringPatternsChart"></canvas>
+                        </div>
+                        <div class="mt-4">
+                            <h6 class="fw-bold">Company Hiring Insight</h6>
+                            <p class="mb-0" id="company-hiring-insight">Loading insight...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practical Tips Cards -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-black shadow border-0 rounded-3">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-hand-point-right me-2"></i>Practical Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 bg-gradient text-white border-0" style="background: linear-gradient(45deg, #11998e, #38ef7d);">
+                                    <img src="https://images.unsplash.com/photo-1524114051012-0a2aa8dae4e1" class="card-img-top" alt="Interview preparation">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Interview Preparation</h5>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas fa-check me-2"></i>Research company backgrounds</li>
+                                            <li><i class="fas fa-check me-2"></i>Practice domain-specific questions</li>
+                                            <li><i class="fas fa-check me-2"></i>Prepare for technical assessments</li>
+                                            <li><i class="fas fa-check me-2"></i>Develop relevant projects for your portfolio</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 bg-gradient text-white border-0" style="background: linear-gradient(45deg, #4776E6, #8E54E9);">
+                                    <img src="https://images.unsplash.com/photo-1430080369629-afa4c2ae5121" class="card-img-top" alt="Skill development">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Skill Development</h5>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas fa-check me-2"></i>Focus on in-demand technologies</li>
+                                            <li><i class="fas fa-check me-2"></i>Complete relevant certifications</li>
+                                            <li><i class="fas fa-check me-2"></i>Build practical projects</li>
+                                            <li><i class="fas fa-check me-2"></i>Participate in hackathons and coding challenges</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 bg-gradient text-white border-0" style="background: linear-gradient(45deg, #ff9966, #ff5e62);">
+                                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71" class="card-img-top" alt="Networking">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Networking</h5>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas fa-check me-2"></i>Connect with professionals on LinkedIn</li>
+                                            <li><i class="fas fa-check me-2"></i>Participate in industry meetups</li>
+                                            <li><i class="fas fa-check me-2"></i>Join relevant online communities</li>
+                                            <li><i class="fas fa-check me-2"></i>Reach out to alumni from your institution</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Domain Insights Cards -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-black shadow border-0 rounded-3">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-code-branch me-2"></i>Domain-Specific Insights</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 bg-black border border-primary">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <img src="https://images.unsplash.com/photo-1483058712412-4245e9b90334" alt="Data Science" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <h5 class="card-title mb-0">Data Science</h5>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Demand:</span>
+                                                <span class="text-info">High</span>
+                                            </div>
+                                            <div class="progress bg-dark">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Avg. Salary:</span>
+                                                <span class="text-success" id="data-science-salary">Loading...</span>
+                                            </div>
+                                            <div class="progress bg-dark">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                        <p class="card-text" id="data-science-insight">Loading domain insights...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 bg-black border border-success">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1" alt="Web Development" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <h5 class="card-title mb-0">Web Development</h5>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Demand:</span>
+                                                <span class="text-info">Medium</span>
+                                            </div>
+                                            <div class="progress bg-dark">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Avg. Salary:</span>
+                                                <span class="text-success" id="web-dev-salary">Loading...</span>
+                                            </div>
+                                            <div class="progress bg-dark">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                        <p class="card-text" id="web-dev-insight">Loading domain insights...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 bg-black border border-warning">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5" alt="Machine Learning" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <h5 class="card-title mb-0">Machine Learning</h5>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Demand:</span>
+                                                <span class="text-info">High</span>
+                                            </div>
+                                            <div class="progress bg-dark">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Avg. Salary:</span>
+                                                <span class="text-success" id="ml-salary">Loading...</span>
+                                            </div>
+                                            <div class="progress bg-dark">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                        <p class="card-text" id="ml-insight">Loading domain insights...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="position-fixed bottom-0 end-0 p-4">
+            <a href="index.html" class="btn btn-primary rounded-circle shadow-lg" style="width: 56px; height: 56px;">
+                <i class="fas fa-home" style="font-size: 1.25rem;"></i>
+            </a>
+        </div>
+    </div>
+
+    <footer class="footer mt-auto py-3 bg-black">
+        <div class="container text-center">
+            <span class="text-muted">Internship Insights Dashboard &copy; 2023</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    
+    <!-- API Client -->
+    <script src="js/api-client.js"></script>
+    
+    <!-- Key Insights Scripts -->
+    <script src="js/key-insights.js"></script>
+</body>
+</html>
