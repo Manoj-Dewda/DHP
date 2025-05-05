@@ -193,7 +193,7 @@ async function initTopCompaniesChart() {
 
             // Create chart
             const topCompaniesChart = new Chart(ctx, {
-                type: 'horizontalBar',
+                type: 'bar',
                 data: {
                     labels: companies,
                     datasets: [{
