@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load key metrics for the dashboard
 async function loadKeyMetrics() {
     try {
-        const insights = await Utils.fetchData('/key-insights');
+        const response = await apiClient.getKeyInsights();
+        const insights = response.status === 'success' ? response.data : {};
 
         if (insights) {
             // Update top domain
@@ -46,7 +47,8 @@ async function initDomainDemandChart() {
     try {
         Utils.showLoading('domainChartLoader');
 
-        const data = await Utils.fetchData('/top-domains');
+        const response = await apiClient.getTopDomains();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('domainDemandChart').getContext('2d');
@@ -122,7 +124,8 @@ async function initSalaryRangeChart() {
     try {
         Utils.showLoading('salaryChartLoader');
 
-        const data = await Utils.fetchData('/salary-insights');
+        const response = await apiClient.getSalaryInsights();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('salaryRangeChart').getContext('2d');
@@ -182,7 +185,8 @@ async function initTopCompaniesChart() {
     try {
         Utils.showLoading('companiesChartLoader');
 
-        const data = await Utils.fetchData('/company-hiring');
+        const response = await apiClient.getCompanyHiring();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('topCompaniesChart').getContext('2d');
@@ -256,7 +260,8 @@ async function initTopCitiesChart() {
     try {
         Utils.showLoading('citiesChartLoader');
 
-        const data = await Utils.fetchData('/jobs-by-city');
+        const response = await apiClient.getJobsByCity();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('topCitiesChart').getContext('2d');
@@ -317,8 +322,11 @@ async function initTopCitiesChart() {
 // Load quick insights for the modal
 async function loadQuickInsights() {
     try {
-        const insights = await Utils.fetchData('/key-insights');
-        const salaryData = await Utils.fetchData('/salary-insights');
+        const insightsResponse = await apiClient.getKeyInsights();
+        const insights = insightsResponse.status === 'success' ? insightsResponse.data : {};
+        
+        const salaryDataResponse = await apiClient.getSalaryInsights();
+        const salaryData = salaryDataResponse.status === 'success' ? salaryDataResponse.data : [];
 
         if (insights && salaryData) {
             // Highest paying domain
