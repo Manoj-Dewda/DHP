@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load key metrics for the dashboard
 async function loadKeyMetrics() {
     try {
-        const insights = await Utils.fetchData('/key-insights');
+        const response = await apiClient.getKeyInsights();
+        const insights = response.status === 'success' ? response.data : null;
 
         if (insights) {
             // Update top domain
@@ -46,7 +47,8 @@ async function initDomainDemandChart() {
     try {
         Utils.showLoading('domainChartLoader');
 
-        const data = await Utils.fetchData('/top-domains');
+        const response = await apiClient.getTopDomains();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('domainDemandChart').getContext('2d');
@@ -122,7 +124,8 @@ async function initSalaryRangeChart() {
     try {
         Utils.showLoading('salaryChartLoader');
 
-        const data = await Utils.fetchData('/salary-insights');
+        const response = await apiClient.getSalaryInsights();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('salaryRangeChart').getContext('2d');

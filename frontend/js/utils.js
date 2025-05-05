@@ -11,7 +11,7 @@ const Utils = {
     async fetchData(endpoint) {
         try {
             // Add api prefix to the endpoint if it doesn't start with it
-            const url = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
+            const url = endpoint;
             
             const response = await fetch(url);
             
