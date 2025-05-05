@@ -8,8 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             initDomainDemandChart(),
             initSalaryRangeChart(),
             initTopCompaniesChart(),
-            initTopCitiesChart(),
-            loadQuickInsights()
+            initTopCitiesChart()
         ]);
     } catch (error) {
         console.error('Error initializing dashboard:', error);
@@ -20,7 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load key metrics for the dashboard
 async function loadKeyMetrics() {
     try {
-        const insights = await Utils.fetchData('/key-insights');
+        const response = await apiClient.getKeyInsights();
+        const insights = response.status === 'success' ? response.data : {};
 
         if (insights) {
             // Update top domain
@@ -182,7 +182,8 @@ async function initTopCompaniesChart() {
     try {
         Utils.showLoading('companiesChartLoader');
 
-        const data = await Utils.fetchData('/company-hiring');
+        const response = await apiClient.getCompanyHiring();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('topCompaniesChart').getContext('2d');
@@ -193,14 +194,14 @@ async function initTopCompaniesChart() {
 
             // Create chart
             const topCompaniesChart = new Chart(ctx, {
-                type: 'horizontalBar',
+                type: 'bar',
                 data: {
                     labels: companies,
                     datasets: [{
                         label: 'Number of Openings',
                         data: counts,
-                        backgroundColor: Utils.generateColors(1, 0.8)[0],
-                        borderColor: Utils.generateColors(1, 1)[0],
+                        backgroundColor: Utils.generateColors(companies.length, 0.8),
+                        borderColor: 'rgba(76, 201, 240, 1)',
                         borderWidth: 1
                     }]
                 },
@@ -256,7 +257,8 @@ async function initTopCitiesChart() {
     try {
         Utils.showLoading('citiesChartLoader');
 
-        const data = await Utils.fetchData('/jobs-by-city');
+        const response = await apiClient.getJobsByCity();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('topCitiesChart').getContext('2d');
