@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load market overview data
 async function loadMarketOverview() {
     try {
-        const insights = await Utils.fetchData('/key-insights');
+        const response = await apiClient.getKeyInsights();
+        const insights = response.status === 'success' ? response.data : {};
 
         if (insights) {
             // Update market overview cards
@@ -39,10 +40,12 @@ async function loadMarketOverview() {
             const marketOverviewText = document.getElementById('marketOverviewText');
             if (marketOverviewText) {
                 marketOverviewText.innerHTML = `
-                    The internship market shows ${insights.total_listings} active listings across ${insights.total_domains} domains and ${insights.total_companies} companies.
-                    The average internship salary stands at ${Utils.formatCurrency(insights.avg_internship_salary)}.
-                    Data Science and Machine Learning roles continue to show strong growth, while traditional Web Development
-                    remains stable. Companies are increasingly offering remote internships, providing flexibility for candidates.
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-chart-line text-success me-2"></i> ${insights.total_listings} active listings across ${insights.total_domains} domains</li>
+                        <li><i class="fas fa-building text-primary me-2"></i> ${insights.total_companies} hiring companies in the market</li>
+                        <li><i class="fas fa-money-bill-wave text-warning me-2"></i> Average salary: ${Utils.formatCurrency(insights.avg_internship_salary)}</li>
+                        <li><i class="fas fa-laptop-code text-info me-2"></i> Data Science and ML showing strongest growth</li>
+                    </ul>
                 `;
             }
         }
@@ -151,7 +154,8 @@ async function initTopPayingDomainsChart() {
         Utils.showLoading('payingChartLoader');
 
         // Get salary data
-        const salaryData = await Utils.fetchData('/salary-insights');
+        const response = await apiClient.getSalaryInsights();
+        const salaryData = response.status === 'success' ? response.data : [];
 
         if (salaryData && salaryData.length > 0) {
             const ctx = document.getElementById('topPayingDomainsChart').getContext('2d');
@@ -230,7 +234,8 @@ async function initMostDemandDomainsChart() {
         Utils.showLoading('demandChartLoader');
 
         // Get domain counts
-        const domainData = await Utils.fetchData('/top-domains');
+        const response = await apiClient.getTopDomains();
+        const domainData = response.status === 'success' ? response.data : [];
 
         if (domainData && domainData.length > 0) {
             const ctx = document.getElementById('mostDemandDomainsChart').getContext('2d');
@@ -304,9 +309,11 @@ async function initMostDemandDomainsChart() {
 async function generateDomainInsights() {
     try {
         // Get salary data
-        const salaryData = await Utils.fetchData('/salary-insights');
+        const salaryResponse = await apiClient.getSalaryInsights();
+        const salaryData = salaryResponse.status === 'success' ? salaryResponse.data : [];
         // Get domain counts
-        const domainCounts = await Utils.fetchData('/top-domains');
+        const domainResponse = await apiClient.getTopDomains();
+        const domainCounts = domainResponse.status === 'success' ? domainResponse.data : [];
 
         if (salaryData && domainCounts && salaryData.length > 0 && domainCounts.length > 0) {
             // Create a map of domain to count
