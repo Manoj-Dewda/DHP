@@ -1,0 +1,80 @@
+Pasted-Here-s-the-prompt-in-text-form-Create-a-modern-internship-insights-web-application-with-the-foll-1746471658528.txt
+Here's the prompt in text form:
+
+Create a modern internship insights web application with the following specifications:
+
+Frontend (HTML, CSS, JavaScript):
+
+Pages:
+Dashboard (index.html)
+Analytics (analytics.html)
+Key Insights (key-insights.html)
+Features:
+Dark theme with Bootstrap 5 styling
+Responsive design for all screen sizes
+Interactive data visualization using Chart.js
+Navigation bar with links to all pages
+Floating action buttons for quick data views
+Filter system for data analysis
+Domain comparison functionality
+Beautiful UI with cards, shadows, and gradients
+Font Awesome icons integration
+Core Components:
+Interactive charts showing:
+Domain demand trends
+Salary insights by domain
+Geographic distribution of opportunities
+Company hiring patterns
+Filter panels for customizing data views
+Insight cards with actionable recommendations
+Domain comparison tools
+Practical tips sections
+JavaScript Functionality:
+API integration with backend
+Dynamic chart rendering
+Filter handling
+Data processing and visualization
+Interactive UI elements
+Error handling and loading states
+Backend (Flask):
+
+API Endpoints: @app.route('/api/top-domains') def get_top_domains(): # Return most in-demand domains with job counts pass @app.route('/api/salary-insights') def get_salary_insights(): # Return salary data by domain pass @app.route('/api/jobs-by-city') def get_jobs_by_city(): # Return job distribution across cities pass @app.route('/api/domains') def get_domains(): # Return list of all domains pass
+Data Structure: class InternshipData: domain: str count: int avg_salary: float city: str company: str
+Features:
+CORS support for frontend integration
+Error handling and validation
+Data aggregation and processing
+Caching for performance
+Response formatting
+Directory Structure: project/ ├── frontend/ │ ├── index.html │ ├── analytics.html │ ├── key-insights.html │ ├── css/ │ │ └── style.css │ └── js/ │ ├── dashboard.js │ ├── analytics.js │ └── key-insights.js └── backend/ ├── app.py ├── requirements.txt └── data/ └── internship_data.json
+
+Implementation Steps:
+
+Set up Flask backend with required endpoints
+Create frontend HTML structure with Bootstrap
+Implement Chart.js visualizations
+Add interactive filters and domain comparison
+Style with custom CSS
+Connect frontend to backend API
+Add error handling and loading states
+Test cross-browser compatibility
+Key Features to Implement:
+
+Real-time data filtering
+Interactive charts with tooltips
+Responsive design for mobile
+Domain comparison tool
+Salary trend analysis
+Geographic distribution visualization
+Company hiring patterns
+Practical recommendations
+Error handling and user feedback
+Loading states for async operations
+Data Visualization Types:
+
+Bar charts for domain demand
+Line charts for salary trends
+Pie charts for location distribution
+Radar charts for skill requirements
+Scatter plots for salary vs demand
+The application should focus on providing actionable insights and a smooth user experience while maintaining high performance and reliability.
