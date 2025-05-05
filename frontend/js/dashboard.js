@@ -46,7 +46,8 @@ async function initDomainDemandChart() {
     try {
         Utils.showLoading('domainChartLoader');
 
-        const data = await Utils.fetchData('/top-domains');
+        const response = await apiClient.getTopDomains();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('domainDemandChart').getContext('2d');
@@ -122,7 +123,8 @@ async function initSalaryRangeChart() {
     try {
         Utils.showLoading('salaryChartLoader');
 
-        const data = await Utils.fetchData('/salary-insights');
+        const response = await apiClient.getSalaryInsights();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('salaryRangeChart').getContext('2d');
@@ -316,26 +318,4 @@ async function initTopCitiesChart() {
     }
 }
 
-// Load quick insights for the modal
-async function loadQuickInsights() {
-    try {
-        const insights = await Utils.fetchData('/key-insights');
-        const salaryData = await Utils.fetchData('/salary-insights');
 
-        if (insights && salaryData) {
-            // Highest paying domain
-            document.getElementById('highestPayingDomain').textContent = `${insights.top_paying_domain} (${Utils.formatCurrency(salaryData[0]?.avg_salary || 0)})`;
-
-            // Most in-demand domain
-            document.getElementById('mostInDemandDomain').textContent = `${insights.top_hiring_domain} with ${Utils.formatNumber(salaryData[0]?.count || 0)} openings`;
-
-            // Top hiring company
-            document.getElementById('topHiringCompany').textContent = insights.top_hiring_company || 'N/A';
-
-            // Top hiring location
-            document.getElementById('topHiringLocation').textContent = insights.top_location || 'N/A';
-        }
-    } catch (error) {
-        console.error('Error loading quick insights:', error);
-    }
-}
