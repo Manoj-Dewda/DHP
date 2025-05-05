@@ -3,6 +3,8 @@
  * Handles all API requests to the backend
  */
 
+const API_BASE_URL = '';  // Leave this empty for relative URLs
+
 const apiClient = {
     /**
      * Get top domains by count
@@ -10,7 +12,7 @@ const apiClient = {
      */
     async getTopDomains() {
         try {
-            const response = await fetch('/api/top-domains');
+            const response = await fetch(`${API_BASE_URL}/api/top-domains`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -27,7 +29,7 @@ const apiClient = {
      */
     async getSalaryInsights() {
         try {
-            const response = await fetch('/api/salary-insights');
+            const response = await fetch(`${API_BASE_URL}/api/salary-insights`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -44,7 +46,7 @@ const apiClient = {
      */
     async getJobsByCity() {
         try {
-            const response = await fetch('/api/jobs-by-city');
+            const response = await fetch(`${API_BASE_URL}/api/jobs-by-city`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -61,7 +63,7 @@ const apiClient = {
      */
     async getDomains() {
         try {
-            const response = await fetch('/api/domains');
+            const response = await fetch(`${API_BASE_URL}/api/domains`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
