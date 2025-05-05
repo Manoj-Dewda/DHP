@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             initSalaryVsDemandChart(),
             initCompanyHiringChart(),
             loadSalaryStats(),
-            loadLocationData(),
             initMarketQuadrants()
         ]);
 
@@ -26,7 +25,8 @@ async function initSalaryByDomainChart() {
     try {
         Utils.showLoading('salaryChartLoader');
         
-        const data = await Utils.fetchData('/salary-insights');
+        const response = await apiClient.getSalaryInsights();
+        const data = response.status === 'success' ? response.data : [];
         
         if (data && data.length > 0) {
             const ctx = document.getElementById('salaryByDomainChart').getContext('2d');
@@ -109,7 +109,7 @@ async function initLocationDistributionChart() {
     try {
         Utils.showLoading('locationChartLoader');
         
-        const data = await Utils.fetchData('/jobs-by-city');
+        const data = await Utils.fetchData('/api/jobs-by-city');
         
         if (data && data.length > 0) {
             const ctx = document.getElementById('locationDistributionChart').getContext('2d');
