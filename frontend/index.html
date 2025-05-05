@@ -63,27 +63,11 @@
     <div class="container my-5 pt-5">
         <!-- Page Header -->
         <div class="row mb-4">
-            <div class="col-md-8">
+            <div class="col-md-12">
                 <h1 class="display-4 gradient-text">Internship Insights</h1>
                 <p class="lead text-light-muted">
                     Visualizing internship trends and opportunities at a glance
                 </p>
-            </div>
-            <div class="col-md-4">
-                <div class="filter-wrapper p-3 rounded shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Quick Filter</h5>
-                        <span class="badge bg-primary">Interactive</span>
-                    </div>
-                    <select id="domainFilter" class="form-select bg-dark text-light mb-2 border-secondary">
-                        <option value="All">All Domains</option>
-                        <!-- Options will be loaded dynamically -->
-                    </select>
-                    <select id="locationFilter" class="form-select bg-dark text-light border-secondary">
-                        <option value="All">All Locations</option>
-                        <!-- Options will be loaded dynamically -->
-                    </select>
-                </div>
             </div>
         </div>
         
@@ -218,143 +202,7 @@
             </div>
         </div>
 
-        <!-- Domain Comparison -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card bg-dark-card shadow-lg border-0">
-                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="text-light mb-0">
-                                <i class="fas fa-exchange-alt me-2 text-info"></i>Domain Comparison Tool
-                            </h5>
-                        </div>
-                        <div>
-                            <span class="badge bg-info rounded-pill">
-                                <i class="fas fa-tools me-1"></i>Interactive Tool
-                            </span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="comparison-tool-container p-4 bg-dark-secondary rounded mb-4">
-                            <div class="row mb-3">
-                                <div class="col-md-5">
-                                    <label class="form-label text-light-muted small mb-1">First Domain</label>
-                                    <select id="domain1" class="form-select bg-dark text-light border-secondary">
-                                        <option value="">Select First Domain</option>
-                                        <!-- Options will be loaded dynamically -->
-                                    </select>
-                                </div>
-                                <div class="col-md-2 text-center">
-                                    <div class="d-none d-md-block pt-4">
-                                        <div class="vs-badge">VS</div>
-                                    </div>
-                                    <div class="d-md-none my-2 text-center">
-                                        VS
-                                    </div>
-                                </div>
-                                <div class="col-md-5">
-                                    <label class="form-label text-light-muted small mb-1">Second Domain</label>
-                                    <select id="domain2" class="form-select bg-dark text-light border-secondary">
-                                        <option value="">Select Second Domain</option>
-                                        <!-- Options will be loaded dynamically -->
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <button id="compareBtn" class="btn btn-primary px-4">
-                                    <i class="fas fa-chart-line me-2"></i>Compare Domains
-                                </button>
-                            </div>
-                        </div>
 
-                        <div id="comparisonResults" class="row d-none">
-                            <div class="col-md-6 mb-4">
-                                <div class="card domain-card domain-card-1 border-0 h-100">
-                                    <div class="card-header domain-header-1 text-white" id="domain1Title">
-                                        <i class="fas fa-briefcase me-2"></i>Domain 1
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="domain-icon-container me-3">
-                                                <i class="fas fa-money-bill-wave domain-icon"></i>
-                                            </div>
-                                            <div>
-                                                <div class="text-muted small">Average Salary</div>
-                                                <div class="h4" id="domain1Salary">-</div>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="domain-icon-container me-3">
-                                                <i class="fas fa-clipboard-list domain-icon"></i>
-                                            </div>
-                                            <div>
-                                                <div class="text-muted small">Number of Listings</div>
-                                                <div class="h4" id="domain1Count">-</div>
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="text-muted small mb-1">Top Companies</div>
-                                            <div class="domain-tags" id="domain1Companies">-</div>
-                                        </div>
-                                        <div>
-                                            <div class="text-muted small mb-1">Top Locations</div>
-                                            <div class="domain-tags" id="domain1Locations">-</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-4">
-                                <div class="card domain-card domain-card-2 border-0 h-100">
-                                    <div class="card-header domain-header-2 text-white" id="domain2Title">
-                                        <i class="fas fa-briefcase me-2"></i>Domain 2
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="domain-icon-container me-3">
-                                                <i class="fas fa-money-bill-wave domain-icon"></i>
-                                            </div>
-                                            <div>
-                                                <div class="text-muted small">Average Salary</div>
-                                                <div class="h4" id="domain2Salary">-</div>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="domain-icon-container me-3">
-                                                <i class="fas fa-clipboard-list domain-icon"></i>
-                                            </div>
-                                            <div>
-                                                <div class="text-muted small">Number of Listings</div>
-                                                <div class="h4" id="domain2Count">-</div>
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="text-muted small mb-1">Top Companies</div>
-                                            <div class="domain-tags" id="domain2Companies">-</div>
-                                        </div>
-                                        <div>
-                                            <div class="text-muted small mb-1">Top Locations</div>
-                                            <div class="domain-tags" id="domain2Locations">-</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="card bg-dark-secondary border-0">
-                                    <div class="card-header bg-transparent">
-                                        <i class="fas fa-chart-line me-2"></i>Comparison Analysis
-                                    </div>
-                                    <div class="card-body">
-                                        <p id="comparisonAnalysis" class="mb-0">
-                                            Select two domains to see a detailed comparison analysis.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Top Companies and Cities -->
         <div class="row">
