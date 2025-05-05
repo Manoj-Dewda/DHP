@@ -80,7 +80,7 @@ const apiClient = {
      */
     async getCompanyHiring() {
         try {
-            const response = await fetch('/api/company-hiring');
+            const response = await fetch(`${API_BASE_URL}/api/company-hiring`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -97,7 +97,7 @@ const apiClient = {
      */
     async getSalaryRange() {
         try {
-            const response = await fetch('/api/salary-ranges');
+            const response = await fetch(`${API_BASE_URL}/api/salary-ranges`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -129,7 +129,7 @@ const apiClient = {
                 params.append('min_salary', filters.minSalary);
             }
             
-            const url = `/api/filter-data${params.toString() ? `?${params.toString()}` : ''}`;
+            const url = `${API_BASE_URL}/api/filter-data${params.toString() ? `?${params.toString()}` : ''}`;
             const response = await fetch(url);
             
             if (!response.ok) {
@@ -155,7 +155,7 @@ const apiClient = {
             params.append('domain1', domain1);
             params.append('domain2', domain2);
             
-            const response = await fetch(`/api/compare-domains?${params.toString()}`);
+            const response = await fetch(`${API_BASE_URL}/api/compare-domains?${params.toString()}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -174,7 +174,7 @@ const apiClient = {
      */
     async getLocations() {
         try {
-            const response = await fetch('/api/locations');
+            const response = await fetch(`${API_BASE_URL}/api/locations`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
@@ -191,7 +191,7 @@ const apiClient = {
      */
     async getKeyInsights() {
         try {
-            const response = await fetch('/api/key-insights');
+            const response = await fetch(`${API_BASE_URL}/api/key-insights`);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
