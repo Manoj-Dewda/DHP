@@ -20,8 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load key metrics for the dashboard
 async function loadKeyMetrics() {
     try {
-        const response = await apiClient.getKeyInsights();
-        const insights = response.status === 'success' ? response.data : {};
+        const insights = await Utils.fetchData('/key-insights');
 
         if (insights) {
             // Update top domain
@@ -47,8 +46,7 @@ async function initDomainDemandChart() {
     try {
         Utils.showLoading('domainChartLoader');
 
-        const response = await apiClient.getTopDomains();
-        const data = response.status === 'success' ? response.data : [];
+        const data = await Utils.fetchData('/top-domains');
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('domainDemandChart').getContext('2d');
@@ -124,8 +122,7 @@ async function initSalaryRangeChart() {
     try {
         Utils.showLoading('salaryChartLoader');
 
-        const response = await apiClient.getSalaryInsights();
-        const data = response.status === 'success' ? response.data : [];
+        const data = await Utils.fetchData('/salary-insights');
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('salaryRangeChart').getContext('2d');
@@ -185,8 +182,7 @@ async function initTopCompaniesChart() {
     try {
         Utils.showLoading('companiesChartLoader');
 
-        const response = await apiClient.getCompanyHiring();
-        const data = response.status === 'success' ? response.data : [];
+        const data = await Utils.fetchData('/company-hiring');
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('topCompaniesChart').getContext('2d');
@@ -197,7 +193,7 @@ async function initTopCompaniesChart() {
 
             // Create chart
             const topCompaniesChart = new Chart(ctx, {
-                type: 'bar',
+                type: 'horizontalBar',
                 data: {
                     labels: companies,
                     datasets: [{
@@ -260,8 +256,7 @@ async function initTopCitiesChart() {
     try {
         Utils.showLoading('citiesChartLoader');
 
-        const response = await apiClient.getJobsByCity();
-        const data = response.status === 'success' ? response.data : [];
+        const data = await Utils.fetchData('/jobs-by-city');
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('topCitiesChart').getContext('2d');
@@ -322,11 +317,8 @@ async function initTopCitiesChart() {
 // Load quick insights for the modal
 async function loadQuickInsights() {
     try {
-        const insightsResponse = await apiClient.getKeyInsights();
-        const insights = insightsResponse.status === 'success' ? insightsResponse.data : {};
-        
-        const salaryDataResponse = await apiClient.getSalaryInsights();
-        const salaryData = salaryDataResponse.status === 'success' ? salaryDataResponse.data : [];
+        const insights = await Utils.fetchData('/key-insights');
+        const salaryData = await Utils.fetchData('/salary-insights');
 
         if (insights && salaryData) {
             // Highest paying domain

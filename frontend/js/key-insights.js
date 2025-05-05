@@ -26,8 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load market overview data
 async function loadMarketOverview() {
     try {
-        const response = await apiClient.getKeyInsights();
-        const insights = response.status === 'success' ? response.data : {};
+        const insights = await Utils.fetchData('/key-insights');
 
         if (insights) {
             // Update market overview cards
@@ -58,8 +57,7 @@ async function initMarketOverviewChart() {
         Utils.showLoading('overviewChartLoader');
 
         // Get domain counts
-        const response = await apiClient.getTopDomains();
-        const domainData = response.status === 'success' ? response.data : [];
+        const domainData = await Utils.fetchData('/top-domains');
 
         if (domainData && domainData.length > 0) {
             const ctx = document.getElementById('marketOverviewChart').getContext('2d');
@@ -152,8 +150,7 @@ async function initTopPayingDomainsChart() {
         Utils.showLoading('payingChartLoader');
 
         // Get salary data
-        const response = await apiClient.getSalaryInsights();
-        const salaryData = response.status === 'success' ? response.data : [];
+        const salaryData = await Utils.fetchData('/salary-insights');
 
         if (salaryData && salaryData.length > 0) {
             const ctx = document.getElementById('topPayingDomainsChart').getContext('2d');
@@ -165,7 +162,7 @@ async function initTopPayingDomainsChart() {
 
             // Create chart
             const topPayingDomainsChart = new Chart(ctx, {
-                type: 'bar',
+                type: 'horizontalBar',
                 data: {
                     labels: domains,
                     datasets: [{
@@ -232,8 +229,7 @@ async function initMostDemandDomainsChart() {
         Utils.showLoading('demandChartLoader');
 
         // Get domain counts
-        const response = await apiClient.getTopDomains();
-        const domainData = response.status === 'success' ? response.data : [];
+        const domainData = await Utils.fetchData('/top-domains');
 
         if (domainData && domainData.length > 0) {
             const ctx = document.getElementById('mostDemandDomainsChart').getContext('2d');
@@ -245,7 +241,7 @@ async function initMostDemandDomainsChart() {
 
             // Create chart
             const mostDemandDomainsChart = new Chart(ctx, {
-                type: 'bar',
+                type: 'horizontalBar',
                 data: {
                     labels: domains,
                     datasets: [{
@@ -307,12 +303,9 @@ async function initMostDemandDomainsChart() {
 async function generateDomainInsights() {
     try {
         // Get salary data
-        const salaryResponse = await apiClient.getSalaryInsights();
-        const salaryData = salaryResponse.status === 'success' ? salaryResponse.data : [];
-        
+        const salaryData = await Utils.fetchData('/salary-insights');
         // Get domain counts
-        const domainsResponse = await apiClient.getTopDomains();
-        const domainCounts = domainsResponse.status === 'success' ? domainsResponse.data : [];
+        const domainCounts = await Utils.fetchData('/top-domains');
 
         if (salaryData && domainCounts && salaryData.length > 0 && domainCounts.length > 0) {
             // Create a map of domain to count
@@ -322,74 +315,86 @@ async function generateDomainInsights() {
             });
 
             // Create combined data for analysis
-            const combinedData = [];
-            
-            salaryData.forEach(item => {
-                if (domainCountMap.has(item.domain)) {
-                    combinedData.push({
-                        domain: item.domain,
-                        count: domainCountMap.get(item.domain),
-                        salary: item.avg_salary
-                    });
-                }
+            const combinedData = salaryData.map(item => {
+                return {
+                    domain: item.domain,
+                    avg_salary: item.avg_salary,
+                    count: domainCountMap.get(item.domain) || 0
+                };
             });
 
-            // Calculate average values for demand and salary
+            // Sort by various metrics to find insights
+            const sortedBySalary = [...combinedData].sort((a, b) => b.avg_salary - a.avg_salary);
+            const sortedByDemand = [...combinedData].sort((a, b) => b.count - a.count);
+
+            // Calculate average salary and demand
+            const avgSalary = combinedData.reduce((sum, item) => sum + item.avg_salary, 0) / combinedData.length;
             const avgDemand = combinedData.reduce((sum, item) => sum + item.count, 0) / combinedData.length;
-            const avgSalary = combinedData.reduce((sum, item) => sum + item.salary, 0) / combinedData.length;
 
-            // Sort by opportunity (combination of demand and salary)
-            const sortedByOpportunity = [...combinedData].sort((a, b) => {
-                const aScore = (a.count / avgDemand) + (a.salary / avgSalary);
-                const bScore = (b.count / avgDemand) + (b.salary / avgSalary);
-                return bScore - aScore;
-            });
+            // Generate insights
+            const insights = [
+                {
+                    title: `${sortedBySalary[0].domain} offers highest average salary`,
+                    description: `With an average of ${Utils.formatCurrency(sortedBySalary[0].avg_salary)}, ${sortedBySalary[0].domain} offers ${Math.round((sortedBySalary[0].avg_salary / avgSalary - 1) * 100)}% above the market average.`,
+                    type: 'positive'
+                },
+                {
+                    title: `${sortedByDemand[0].domain} has highest market demand`,
+                    description: `With ${sortedByDemand[0].count} open positions, ${sortedByDemand[0].domain} leads the market in terms of opportunities.`,
+                    type: 'positive'
+                },
+                {
+                    title: 'Remote work opportunities are abundant',
+                    description: 'Many companies offer "Work from home" options, providing flexibility for interns regardless of location.',
+                    type: 'neutral'
+                }
+            ];
 
-            // Update the insights container
-            const insightsContainer = document.getElementById('domainInsightsContainer');
-            
-            if (insightsContainer && sortedByOpportunity.length > 0) {
-                // Create visualization
-                const topDomains = sortedByOpportunity.slice(0, 3);
-                
-                let visualizationHTML = '';
-                
-                topDomains.forEach((domain, index) => {
-                    const domainScore = ((domain.count / avgDemand) + (domain.salary / avgSalary)) / 2;
-                    const scorePercentage = Math.min(Math.round(domainScore * 50), 100);
-                    
-                    visualizationHTML += `
-                        <div class="domain-insight-item">
-                            <div class="domain-insight-header">
-                                <h5>${domain.domain}</h5>
-                                <span class="badge bg-success">${scorePercentage}% Match</span>
-                            </div>
-                            <div class="domain-insight-body">
-                                <div class="domain-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Demand</span>
-                                        <span class="stat-value">${Utils.formatNumber(domain.count)} listings</span>
-                                        <div class="progress bg-dark">
-                                            <div class="progress-bar bg-info" style="width: ${Math.min(Math.round((domain.count / avgDemand) * 50), 100)}%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Avg. Salary</span>
-                                        <span class="stat-value">${Utils.formatCurrency(domain.salary)}</span>
-                                        <div class="progress bg-dark">
-                                            <div class="progress-bar bg-warning" style="width: ${Math.min(Math.round((domain.salary / avgSalary) * 50), 100)}%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="domain-description">
-                                    <p>${getDomainDescription(domain.domain, domain.count, domain.salary, avgDemand, avgSalary)}</p>
+            // Find domains with high demand and high salary
+            const highValueDomains = combinedData.filter(item => 
+                item.avg_salary > avgSalary && item.count > avgDemand
+            ).sort((a, b) => (b.avg_salary * b.count) - (a.avg_salary * a.count));
+
+            if (highValueDomains.length > 0) {
+                insights.push({
+                    title: `${highValueDomains[0].domain} offers best value proposition`,
+                    description: `With high demand (${highValueDomains[0].count} listings) and excellent compensation (${Utils.formatCurrency(highValueDomains[0].avg_salary)}), this domain offers the best balance.`,
+                    type: 'positive'
+                });
+            }
+
+            // Find domains with low demand but high salary
+            const nicheDomains = combinedData.filter(item => 
+                item.avg_salary > avgSalary && item.count < avgDemand
+            ).sort((a, b) => b.avg_salary - a.avg_salary);
+
+            if (nicheDomains.length > 0) {
+                insights.push({
+                    title: `${nicheDomains[0].domain} is a lucrative niche`,
+                    description: `Despite fewer opportunities (${nicheDomains[0].count} listings), this domain offers excellent compensation (${Utils.formatCurrency(nicheDomains[0].avg_salary)}).`,
+                    type: 'warning'
+                });
+            }
+
+            // Update the domain insights section
+            const domainInsightsContainer = document.getElementById('domainInsights');
+            if (domainInsightsContainer) {
+                let insightsHTML = '';
+
+                insights.forEach(insight => {
+                    insightsHTML += `
+                        <div class="col-lg-6 mb-3">
+                            <div class="card bg-dark-secondary insight-card ${insight.type}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${insight.title}</h5>
+                                    <p class="card-text">${insight.description}</p>
                                 </div>
                             </div>
                         </div>
                     `;
                 });
-                
-                insightsContainer.innerHTML = visualizationHTML;
+
+                domainInsightsContainer.innerHTML = insightsHTML;
             }
         }
     } catch (error) {
@@ -400,119 +405,92 @@ async function generateDomainInsights() {
 // Generate recommendations
 async function generateRecommendations() {
     try {
-        // Get key insights
-        const insightsResponse = await apiClient.getKeyInsights();
-        const insights = insightsResponse.status === 'success' ? insightsResponse.data : {};
-        
         // Get salary data
-        const salaryResponse = await apiClient.getSalaryInsights();
-        const salaryData = salaryResponse.status === 'success' ? salaryResponse.data : [];
-        
-        if (insights && salaryData && salaryData.length > 0) {
-            // Sort salary data by avg_salary
-            const sortedBySalary = [...salaryData].sort((a, b) => b.avg_salary - a.avg_salary);
-            
-            // Get top domains
-            const topDomains = sortedBySalary.slice(0, 3).map(item => item.domain);
-            
-            // Get recommendation sections
-            const beginnerSection = document.getElementById('beginnerRecommendations');
-            const intermediateSection = document.getElementById('intermediateRecommendations');
-            const advancedSection = document.getElementById('advancedRecommendations');
-            
-            if (beginnerSection && intermediateSection && advancedSection) {
-                // Generate beginner recommendations
-                beginnerSection.innerHTML = `
-                    <li class="list-group-item bg-dark-secondary border-0 mb-2 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Focus on ${topDomains[0]}</h6>
-                                <p class="mb-0 small text-light-muted">This domain has high demand and excellent compensation. Start with the fundamentals.</p>
+        const salaryData = await Utils.fetchData('/salary-insights');
+        // Get domain counts
+        const domainCounts = await Utils.fetchData('/top-domains');
+        // Get key insights
+        const keyInsights = await Utils.fetchData('/key-insights');
+
+        if (salaryData && domainCounts && keyInsights) {
+            // Create recommendations based on data
+            const recommendations = [
+                {
+                    title: 'Focus on High-Demand, High-Salary Domains',
+                    description: `Data shows that ${keyInsights.top_paying_domain} offers the highest average salary. Consider developing skills in this area to maximize earning potential.`,
+                    icon: 'star',
+                    color: 'success'
+                },
+                {
+                    title: 'Consider Remote Opportunities',
+                    description: 'Many companies offer remote internships, which provide flexibility and wider job access regardless of your location.',
+                    icon: 'home',
+                    color: 'info'
+                },
+                {
+                    title: `Target Top Hiring Companies`,
+                    description: `${keyInsights.top_hiring_company} leads with the most internship listings. Research their requirements and tailor your applications accordingly.`,
+                    icon: 'building',
+                    color: 'primary'
+                },
+                {
+                    title: 'Develop Cross-Domain Skills',
+                    description: 'Companies value interns with skills that span multiple domains. Consider learning complementary skills to increase your marketability.',
+                    icon: 'code-branch',
+                    color: 'warning'
+                },
+                {
+                    title: 'Optimize for Growth Opportunities',
+                    description: 'When comparing offers, consider not just the salary but also the learning potential and future career prospects.',
+                    icon: 'chart-line',
+                    color: 'danger'
+                },
+                {
+                    title: 'Prepare for Technical Interviews',
+                    description: 'Most high-paying domains require technical assessments. Practice problem-solving and prepare for domain-specific questions.',
+                    icon: 'laptop-code',
+                    color: 'secondary'
+                }
+            ];
+
+            // Update the recommendations section
+            const recommendationCards = document.getElementById('recommendationCards');
+            if (recommendationCards) {
+                let cardsHTML = '';
+
+                recommendations.forEach(recommendation => {
+                    cardsHTML += `
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card bg-dark-secondary h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="icon-circle bg-${recommendation.color} text-white me-3">
+                                            <i class="fas fa-${recommendation.icon}"></i>
+                                        </div>
+                                        <h5 class="card-title mb-0">${recommendation.title}</h5>
+                                    </div>
+                                    <p class="card-text">${recommendation.description}</p>
+                                </div>
                             </div>
-                            <span class="badge bg-primary rounded-pill">High Priority</span>
                         </div>
-                    </li>
-                    <li class="list-group-item bg-dark-secondary border-0 mb-2 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Build a portfolio</h6>
-                                <p class="mb-0 small text-light-muted">Create 2-3 projects showcasing your skills in your chosen domain.</p>
-                            </div>
-                            <span class="badge bg-info rounded-pill">Essential</span>
-                        </div>
-                    </li>
-                    <li class="list-group-item bg-dark-secondary border-0 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Learn ${insights.trending_skills ? insights.trending_skills[0] : 'basic skills'}</h6>
-                                <p class="mb-0 small text-light-muted">This is the most in-demand skill for entry-level positions.</p>
-                            </div>
-                            <span class="badge bg-success rounded-pill">Trending</span>
-                        </div>
-                    </li>
+                    `;
+                });
+
+                recommendationCards.innerHTML = cardsHTML;
+
+                // Add CSS for icon circles
+                const style = document.createElement('style');
+                style.textContent = `
+                    .icon-circle {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
                 `;
-                
-                // Generate intermediate recommendations
-                intermediateSection.innerHTML = `
-                    <li class="list-group-item bg-dark-secondary border-0 mb-2 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Specialize in ${topDomains[1]}</h6>
-                                <p class="mb-0 small text-light-muted">After gaining basic experience, specialize in this high-growth area.</p>
-                            </div>
-                            <span class="badge bg-primary rounded-pill">Specialization</span>
-                        </div>
-                    </li>
-                    <li class="list-group-item bg-dark-secondary border-0 mb-2 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Pursue certifications</h6>
-                                <p class="mb-0 small text-light-muted">Industry certifications can boost your resume significantly.</p>
-                            </div>
-                            <span class="badge bg-info rounded-pill">Credential</span>
-                        </div>
-                    </li>
-                    <li class="list-group-item bg-dark-secondary border-0 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Focus on ${insights.top_hiring_company || 'top companies'}</h6>
-                                <p class="mb-0 small text-light-muted">Target internships at companies hiring the most in your field.</p>
-                            </div>
-                            <span class="badge bg-warning rounded-pill">Strategic</span>
-                        </div>
-                    </li>
-                `;
-                
-                // Generate advanced recommendations
-                advancedSection.innerHTML = `
-                    <li class="list-group-item bg-dark-secondary border-0 mb-2 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Transition to ${topDomains[2]}</h6>
-                                <p class="mb-0 small text-light-muted">Consider pivoting to this high-paying domain for career growth.</p>
-                            </div>
-                            <span class="badge bg-primary rounded-pill">Career Growth</span>
-                        </div>
-                    </li>
-                    <li class="list-group-item bg-dark-secondary border-0 mb-2 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Develop leadership skills</h6>
-                                <p class="mb-0 small text-light-muted">Take on team projects and leadership roles in internships.</p>
-                            </div>
-                            <span class="badge bg-info rounded-pill">Soft Skills</span>
-                        </div>
-                    </li>
-                    <li class="list-group-item bg-dark-secondary border-0 rounded">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">Explore ${insights.emerging_domains ? insights.emerging_domains[0] : 'emerging fields'}</h6>
-                                <p class="mb-0 small text-light-muted">Stay ahead by exploring cutting-edge domains with future potential.</p>
-                            </div>
-                            <span class="badge bg-danger rounded-pill">Cutting Edge</span>
-                        </div>
-                    </li>
-                `;
+                document.head.appendChild(style);
             }
         }
     } catch (error) {
@@ -520,33 +498,14 @@ async function generateRecommendations() {
     }
 }
 
-// Initialize scroll to recommendations
+// Initialize scroll to recommendations functionality
 function initScrollToRecommendations() {
-    const scrollBtn = document.getElementById('scrollToRecommendations');
-    
-    if (scrollBtn) {
-        scrollBtn.addEventListener('click', () => {
-            const recommendationsSection = document.getElementById('recommendationsSection');
-            
-            if (recommendationsSection) {
-                recommendationsSection.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-    }
-}
+    const jumpButton = document.getElementById('jumpToRecommendations');
+    const recommendationSection = document.getElementById('recommendationSection');
 
-// Helper function to generate domain descriptions
-function getDomainDescription(domain, count, salary, avgDemand, avgSalary) {
-    const demandRatio = count / avgDemand;
-    const salaryRatio = salary / avgSalary;
-    
-    if (demandRatio > 1.2 && salaryRatio > 1.2) {
-        return `${domain} is a high-opportunity field with strong demand (${count} listings) and excellent compensation (${Utils.formatCurrency(salary)}). It's an ideal domain to focus on.`;
-    } else if (demandRatio > 1.2 && salaryRatio <= 1.2) {
-        return `${domain} has high demand (${count} listings) but moderate compensation (${Utils.formatCurrency(salary)}). Consider specializing to increase salary potential.`;
-    } else if (demandRatio <= 1.2 && salaryRatio > 1.2) {
-        return `${domain} offers excellent compensation (${Utils.formatCurrency(salary)}) but with moderate demand (${count} listings). Competition may be higher for these positions.`;
-    } else {
-        return `${domain} currently shows balanced demand (${count} listings) and compensation (${Utils.formatCurrency(salary)}). It's a stable option with good potential.`;
+    if (jumpButton && recommendationSection) {
+        jumpButton.addEventListener('click', () => {
+            recommendationSection.scrollIntoView({ behavior: 'smooth' });
+        });
     }
 }
