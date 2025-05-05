@@ -162,7 +162,7 @@ async function initTopPayingDomainsChart() {
 
             // Create chart
             const topPayingDomainsChart = new Chart(ctx, {
-                type: 'horizontalBar',
+                type: 'bar',
                 data: {
                     labels: domains,
                     datasets: [{
