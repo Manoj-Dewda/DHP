@@ -1,5 +1,17 @@
 // Analytics.js - Handles the analytics page functionality
 
+// Utility function to calculate median of an array
+function calculateMedian(arr) {
+    if (arr.length === 0) return 0;
+    
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    
+    return sorted.length % 2 === 0
+        ? (sorted[mid - 1] + sorted[mid]) / 2
+        : sorted[mid];
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Initialize all charts
@@ -584,8 +596,14 @@ async function loadSalaryStats() {
             document.getElementById('highestPayingDomain').textContent = `${highestPayingDomain.domain} (${Utils.formatCurrency(highestPayingDomain.avg_salary)})`;
             document.getElementById('lowestPayingDomain').textContent = `${lowestPayingDomain.domain} (${Utils.formatCurrency(lowestPayingDomain.avg_salary)})`;
             
-            // Get overall salary stats
-            const salaryStats = await Utils.fetchData('/salary-stats');
+            // Calculate salary statistics directly from salary insights data
+            const salaryValues = salaryInsights.map(item => item.avg_salary);
+            const salaryStats = {
+                min: Math.min(...salaryValues),
+                max: Math.max(...salaryValues),
+                mean: salaryValues.reduce((sum, val) => sum + val, 0) / salaryValues.length,
+                median: calculateMedian(salaryValues)
+            };
             
             if (salaryStats) {
                 document.getElementById('averageSalary').textContent = Utils.formatCurrency(salaryStats.mean);
