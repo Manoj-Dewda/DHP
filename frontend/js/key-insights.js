@@ -26,8 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load market overview data
 async function loadMarketOverview() {
     try {
-        const response = await apiClient.getKeyInsights();
-        const insights = response.status === 'success' ? response.data : null;
+        const insights = await Utils.fetchData('/key-insights');
 
         if (insights) {
             // Update market overview cards
