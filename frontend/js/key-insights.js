@@ -57,7 +57,8 @@ async function initMarketOverviewChart() {
         Utils.showLoading('overviewChartLoader');
 
         // Get domain counts
-        const domainData = await Utils.fetchData('/top-domains');
+        const response = await apiClient.getTopDomains();
+        const domainData = response.status === 'success' ? response.data : [];
 
         if (domainData && domainData.length > 0) {
             const ctx = document.getElementById('marketOverviewChart').getContext('2d');
@@ -241,7 +242,7 @@ async function initMostDemandDomainsChart() {
 
             // Create chart
             const mostDemandDomainsChart = new Chart(ctx, {
-                type: 'horizontalBar',
+                type: 'bar',
                 data: {
                     labels: domains,
                     datasets: [{
@@ -406,11 +407,11 @@ async function generateDomainInsights() {
 async function generateRecommendations() {
     try {
         // Get salary data
-        const salaryData = await Utils.fetchData('/salary-insights');
+        const salaryData = await apiClient.getSalaryInsights().then(res => res.status === 'success' ? res.data : []);
         // Get domain counts
-        const domainCounts = await Utils.fetchData('/top-domains');
+        const domainCounts = await apiClient.getTopDomains().then(res => res.status === 'success' ? res.data : []);
         // Get key insights
-        const keyInsights = await Utils.fetchData('/key-insights');
+        const keyInsights = await apiClient.getKeyInsights().then(res => res.status === 'success' ? res.data : {});
 
         if (salaryData && domainCounts && keyInsights) {
             // Create recommendations based on data
