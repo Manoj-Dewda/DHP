@@ -46,7 +46,8 @@ async function initDomainDemandChart() {
     try {
         Utils.showLoading('domainChartLoader');
 
-        const data = await Utils.fetchData('/top-domains');
+        const response = await apiClient.getTopDomains();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('domainDemandChart').getContext('2d');
@@ -122,7 +123,8 @@ async function initSalaryRangeChart() {
     try {
         Utils.showLoading('salaryChartLoader');
 
-        const data = await Utils.fetchData('/salary-insights');
+        const response = await apiClient.getSalaryInsights();
+        const data = response.status === 'success' ? response.data : [];
 
         if (data && data.length > 0) {
             const ctx = document.getElementById('salaryRangeChart').getContext('2d');
@@ -319,8 +321,11 @@ async function initTopCitiesChart() {
 // Load quick insights for the modal
 async function loadQuickInsights() {
     try {
-        const insights = await Utils.fetchData('/key-insights');
-        const salaryData = await Utils.fetchData('/salary-insights');
+        const insightsResponse = await apiClient.getKeyInsights();
+        const insights = insightsResponse.status === 'success' ? insightsResponse.data : null;
+        
+        const salaryResponse = await apiClient.getSalaryInsights();
+        const salaryData = salaryResponse.status === 'success' ? salaryResponse.data : [];
 
         if (insights && salaryData) {
             // Highest paying domain
