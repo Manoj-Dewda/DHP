@@ -5,7 +5,12 @@
 
 const API_BASE_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:8000'  // Local development
-    : 'https://datadashpro-backend.onrender.com';  // Production Render URL
+    : 'https://datadashpro-backend.onrender.com';  // Backend service URL
+
+// If we're on Render and both services are on the same domain, use relative URLs
+if (window.location.hostname.includes('render.com')) {
+    API_BASE_URL = window.location.origin;
+}
 
 const apiClient = {
     /**

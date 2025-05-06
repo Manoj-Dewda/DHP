@@ -11,9 +11,10 @@ logging.basicConfig(level=logging.DEBUG)
 # Initialize Flask app
 app = Flask(__name__)
 # Configure CORS
+# Enable CORS for development and production
 cors = CORS(app, resources={
     r"/api/*": {
-        "origins": ["https://datadashpro-frontend.windsurf.build", "https://datadashpro-frontend.onrender.com", "http://localhost:3000"],
+        "origins": ["https://datadashpro-frontend.onrender.com", "http://localhost:3000", "http://localhost:8000"],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
