@@ -3,7 +3,9 @@
  * Handles all API requests to the backend
  */
 
-const API_BASE_URL = '';  // Leave this empty for relative URLs
+const API_BASE_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:8000'  // Local development
+    : 'https://datadashpro-backend.onrender.com';  // Production Render URL
 
 const apiClient = {
     /**

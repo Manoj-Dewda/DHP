@@ -8,13 +8,46 @@ document.addEventListener('DOMContentLoaded', async () => {
             initDomainDemandChart(),
             initSalaryRangeChart(),
             initTopCompaniesChart(),
-            initTopCitiesChart()
+            initTopCitiesChart(),
+            initModals()
         ]);
     } catch (error) {
         console.error('Error initializing dashboard:', error);
         Utils.createToast('Failed to initialize dashboard', 'danger');
     }
 });
+
+// Initialize modals
+async function initModals() {
+    // Quick Insights Modal
+    const quickInsightsModal = document.getElementById('quickInsightsModal');
+    if (quickInsightsModal) {
+        quickInsightsModal.addEventListener('show.bs.modal', loadQuickInsights);
+    }
+
+    // Compare Domains Modal
+    const compareDomainsModal = document.getElementById('compareDomainsModal');
+    if (compareDomainsModal) {
+        // Load domains for dropdowns
+        const domainsResponse = await apiClient.getDomains();
+        const domains = domainsResponse.status === 'success' ? domainsResponse.data : [];
+
+        const domain1Select = document.getElementById('domain1');
+        const domain2Select = document.getElementById('domain2');
+
+        // Populate dropdowns
+        domains.forEach(domain => {
+            const option1 = new Option(domain, domain);
+            const option2 = new Option(domain, domain);
+            domain1Select.add(option1);
+            domain2Select.add(option2);
+        });
+
+        // Add change event listeners
+        domain1Select.addEventListener('change', updateComparison);
+        domain2Select.addEventListener('change', updateComparison);
+    }
+}
 
 // Load key metrics for the dashboard
 async function loadKeyMetrics() {
@@ -324,15 +357,21 @@ async function loadQuickInsights() {
         const insightsResponse = await apiClient.getKeyInsights();
         const insights = insightsResponse.status === 'success' ? insightsResponse.data : null;
         
+        const domainsResponse = await apiClient.getTopDomains();
+        const domainData = domainsResponse.status === 'success' ? domainsResponse.data : [];
+        
         const salaryResponse = await apiClient.getSalaryInsights();
         const salaryData = salaryResponse.status === 'success' ? salaryResponse.data : [];
 
-        if (insights && salaryData) {
+        if (insights && domainData.length > 0 && salaryData.length > 0) {
+            // Get the count for the top hiring domain
+            const topDomainData = domainData.find(d => d.domain === insights.top_hiring_domain) || { count: 0 };
+
             // Highest paying domain
             document.getElementById('highestPayingDomain').textContent = `${insights.top_paying_domain} (${Utils.formatCurrency(salaryData[0]?.avg_salary || 0)})`;
 
             // Most in-demand domain
-            document.getElementById('mostInDemandDomain').textContent = `${insights.top_hiring_domain} with ${Utils.formatNumber(salaryData[0]?.count || 0)} openings`;
+            document.getElementById('mostInDemandDomain').textContent = `${insights.top_hiring_domain} with ${Utils.formatNumber(topDomainData.count)} openings`;
 
             // Top hiring company
             document.getElementById('topHiringCompany').textContent = insights.top_hiring_company || 'N/A';
@@ -342,5 +381,66 @@ async function loadQuickInsights() {
         }
     } catch (error) {
         console.error('Error loading quick insights:', error);
+        Utils.createToast('Failed to load insights', 'danger');
+    }
+}
+
+// Update domain comparison
+async function updateComparison() {
+    const domain1 = document.getElementById('domain1').value;
+    const domain2 = document.getElementById('domain2').value;
+    const resultsDiv = document.getElementById('comparisonResults');
+
+    if (!domain1 || !domain2) {
+        resultsDiv.classList.add('d-none');
+        return;
+    }
+
+    try {
+        const response = await apiClient.compareDomains(domain1, domain2);
+        if (response.status === 'success') {
+            const data = response.data;
+            
+            // Update domain 1 data
+            document.getElementById('domain1Name').textContent = data.domain1.name;
+            document.getElementById('domain1Salary').textContent = Utils.formatCurrency(data.domain1.avg_salary);
+            document.getElementById('domain1Count').textContent = data.domain1.count;
+            
+            // Update domain 1 companies
+            const companies1 = document.getElementById('domain1Companies');
+            companies1.innerHTML = Object.entries(data.domain1.top_companies)
+                .map(([company, count]) => `<li>${company}: ${count}</li>`)
+                .join('');
+            
+            // Update domain 1 locations
+            const locations1 = document.getElementById('domain1Locations');
+            locations1.innerHTML = Object.entries(data.domain1.top_locations)
+                .map(([location, count]) => `<li>${location}: ${count}</li>`)
+                .join('');
+            
+            // Update domain 2 data
+            document.getElementById('domain2Name').textContent = data.domain2.name;
+            document.getElementById('domain2Salary').textContent = Utils.formatCurrency(data.domain2.avg_salary);
+            document.getElementById('domain2Count').textContent = data.domain2.count;
+            
+            // Update domain 2 companies
+            const companies2 = document.getElementById('domain2Companies');
+            companies2.innerHTML = Object.entries(data.domain2.top_companies)
+                .map(([company, count]) => `<li>${company}: ${count}</li>`)
+                .join('');
+            
+            // Update domain 2 locations
+            const locations2 = document.getElementById('domain2Locations');
+            locations2.innerHTML = Object.entries(data.domain2.top_locations)
+                .map(([location, count]) => `<li>${location}: ${count}</li>`)
+                .join('');
+
+            resultsDiv.classList.remove('d-none');
+        } else {
+            Utils.createToast('Failed to load comparison data', 'danger');
+        }
+    } catch (error) {
+        console.error('Error comparing domains:', error);
+        Utils.createToast('Failed to compare domains', 'danger');
     }
 }

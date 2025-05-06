@@ -96,44 +96,51 @@ const Utils = {
             return null;
         }
     },
-
     // Initialize form filters
     initializeFilters: async () => {
         try {
             // Fetch domains for filter
-            const domains = await Utils.fetchData('/domains');
-            const domainFilters = document.querySelectorAll('#domainFilter');
+            const domainsResponse = await apiClient.getDomains();
+            
+            if (domainsResponse.status === 'success') {
+                const domains = domainsResponse.data;
+                const domainFilters = document.querySelectorAll('#domainFilter');
 
-            if (domains && domains.length > 0) {
-                domainFilters.forEach(filter => {
-                    // Keep the "All Domains" option
-                    let options = '<option value="All">All Domains</option>';
+                if (domains && domains.length > 0) {
+                    domainFilters.forEach(filter => {
+                        // Keep the "All Domains" option
+                        let options = '<option value="All">All Domains</option>';
 
-                    // Add domain options
-                    domains.forEach(domain => {
-                        options += `<option value="${domain}">${domain}</option>`;
+                        // Add domain options
+                        domains.forEach(domain => {
+                            options += `<option value="${domain}">${domain}</option>`;
+                        });
+
+                        filter.innerHTML = options;
                     });
-
-                    filter.innerHTML = options;
-                });
+                }
             }
 
             // Fetch locations for filter
-            const locations = await Utils.fetchData('/locations');
-            const locationFilters = document.querySelectorAll('#locationFilter');
+            const locationsResponse = await apiClient.getLocations();
+            
+            if (locationsResponse.status === 'success') {
+                const locations = locationsResponse.data;
+                const locationFilters = document.querySelectorAll('#locationFilter');
 
-            if (locations && locations.length > 0) {
-                locationFilters.forEach(filter => {
-                    // Keep the "All Locations" option
-                    let options = '<option value="All">All Locations</option>';
+                if (locations && locations.length > 0) {
+                    locationFilters.forEach(filter => {
+                        // Keep the "All Locations" option
+                        let options = '<option value="All">All Locations</option>';
 
-                    // Add location options
-                    locations.forEach(location => {
-                        options += `<option value="${location}">${location}</option>`;
+                        // Add location options
+                        locations.forEach(location => {
+                            options += `<option value="${location}">${location}</option>`;
+                        });
+
+                        filter.innerHTML = options;
                     });
-
-                    filter.innerHTML = options;
-                });
+                }
             }
 
             // Initialize domain comparison selects
@@ -178,9 +185,11 @@ const Utils = {
                     compareBtn.disabled = true;
 
                     // Fetch comparison data
-                    const comparisonData = await Utils.fetchData(`/compare-domains?domain1=${encodeURIComponent(domain1)}&domain2=${encodeURIComponent(domain2)}`);
+                    const comparisonResponse = await apiClient.compareDomains(domain1, domain2);
+                    
+                    if (comparisonResponse.status === 'success') {
+                        const comparisonData = comparisonResponse.data;
 
-                    if (comparisonData) {
                         // Update comparison results
                         const results = document.getElementById('comparisonResults');
 

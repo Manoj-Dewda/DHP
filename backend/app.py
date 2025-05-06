@@ -10,12 +10,20 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all domains on all routes
+# Configure CORS
+cors = CORS(app, resources={
+    r"/api/*": {
+        "origins": ["https://datadashpro-frontend.windsurf.build", "https://datadashpro-frontend.onrender.com", "http://localhost:3000"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # Load and process data
 try:
     # Load data from CSV file
-    df = pd.read_csv('internship_data.csv')
+    data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'CleanedData.csv')
+    df = pd.read_csv(data_path)
     logging.info(f"Successfully loaded data with {len(df)} records")
 except Exception as e:
     logging.error(f"Error loading data: {e}")
@@ -242,4 +250,9 @@ def get_key_insights():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    # Use environment variables for host and port if available
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port, debug=False)
+    
+# This is for Render deployment
+app.config['PROPAGATE_EXCEPTIONS'] = True

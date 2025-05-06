@@ -45,11 +45,6 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="salary-heatmap.html">
-                            <i class="fas fa-fire me-1"></i> Salary Heatmap
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="about.html">
                             <i class="fas fa-info-circle me-1"></i> About
                         </a>
@@ -268,25 +263,17 @@
     <footer class="bg-dark-secondary text-light py-4 mt-5">
         <div class="container">
             <div class="row">
-                <div class="col-md-4 mb-4 mb-md-0">
+                <div class="col-md-6 mb-4 mb-md-0">
                     <h5 class="gradient-text mb-3">Internship Insights</h5>
                     <p class="text-light-muted">Empowering students and job seekers with data-driven internship market intelligence.</p>
                 </div>
-                <div class="col-md-4 mb-4 mb-md-0">
+                <div class="col-md-6 mb-4 mb-md-0">
                     <h5 class="text-light mb-3">Quick Links</h5>
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="index.html" class="text-light-muted text-decoration-none"><i class="fas fa-chevron-right me-2 small"></i>Dashboard</a></li>
                         <li class="mb-2"><a href="analytics.html" class="text-light-muted text-decoration-none"><i class="fas fa-chevron-right me-2 small"></i>Analytics</a></li>
                         <li class="mb-2"><a href="key-insights.html" class="text-light-muted text-decoration-none"><i class="fas fa-chevron-right me-2 small"></i>Key Insights</a></li>
                         <li><a href="about.html" class="text-light-muted text-decoration-none"><i class="fas fa-chevron-right me-2 small"></i>About</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5 class="text-light mb-3">Contact</h5>
-                    <ul class="list-unstyled text-light-muted">
-                        <li class="mb-2"><i class="fas fa-envelope me-2"></i> info@internshipinsights.com</li>
-                        <li class="mb-2"><i class="fas fa-phone me-2"></i> +1 (555) 123-4567</li>
-                        <li><i class="fas fa-map-marker-alt me-2"></i> 123 Data Street, Analytics City</li>
                     </ul>
                 </div>
             </div>
@@ -305,11 +292,18 @@
         </div>
     </footer>
 
-    <!-- Floating Action Button -->
-    <div class="floating-action-btn">
-        <button class="btn btn-primary btn-lg rounded-circle shadow-lg" data-bs-toggle="modal" data-bs-target="#quickInsightsModal">
-            <i class="fas fa-bolt"></i>
-        </button>
+    <!-- Floating Action Buttons -->
+    <div class="floating-action-btns">
+        <div class="floating-action-btn mb-2">
+            <button class="btn btn-primary btn-lg rounded-circle shadow-lg" data-bs-toggle="modal" data-bs-target="#quickInsightsModal">
+                <i class="fas fa-bolt"></i>
+            </button>
+        </div>
+        <div class="floating-action-btn">
+            <button class="btn btn-info btn-lg rounded-circle shadow-lg" data-bs-toggle="modal" data-bs-target="#compareDomainsModal">
+                <i class="fas fa-exchange-alt"></i>
+            </button>
+        </div>
     </div>
 
     <!-- Quick Insights Modal -->
@@ -351,6 +345,64 @@
                                 <div class="card-body">
                                     <h5 class="card-title"><i class="fas fa-map-marker-alt me-2 text-success"></i>Top Hiring Location</h5>
                                     <p class="card-text" id="topHiringLocation">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Domains Modal -->
+    <div class="modal fade" id="compareDomainsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark-card text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>Compare Domains</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="domain1" class="form-label">First Domain</label>
+                            <select class="form-select bg-dark text-light" id="domain1">
+                                <option value="">Select Domain</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="domain2" class="form-label">Second Domain</label>
+                            <select class="form-select bg-dark text-light" id="domain2">
+                                <option value="">Select Domain</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="comparisonResults" class="d-none">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card bg-dark-secondary mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title" id="domain1Name">Domain 1</h6>
+                                        <p class="mb-2">Average Salary: <span id="domain1Salary">-</span></p>
+                                        <p class="mb-2">Total Listings: <span id="domain1Count">-</span></p>
+                                        <p class="mb-2">Top Companies:</p>
+                                        <ul id="domain1Companies" class="list-unstyled small"></ul>
+                                        <p class="mb-2">Top Locations:</p>
+                                        <ul id="domain1Locations" class="list-unstyled small"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-dark-secondary mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title" id="domain2Name">Domain 2</h6>
+                                        <p class="mb-2">Average Salary: <span id="domain2Salary">-</span></p>
+                                        <p class="mb-2">Total Listings: <span id="domain2Count">-</span></p>
+                                        <p class="mb-2">Top Companies:</p>
+                                        <ul id="domain2Companies" class="list-unstyled small"></ul>
+                                        <p class="mb-2">Top Locations:</p>
+                                        <ul id="domain2Locations" class="list-unstyled small"></ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>

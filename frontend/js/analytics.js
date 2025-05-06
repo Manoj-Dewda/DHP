@@ -257,10 +257,18 @@ async function initSalaryVsDemandChart() {
     try {
         Utils.showLoading('scatterChartLoader');
         
-        // Get domain counts
-        const domainCounts = await Utils.fetchData('/top-domains');
-        // Get salary data
-        const salaryData = await Utils.fetchData('/salary-insights');
+        // Get domain counts and salary data
+        const [domainResponse, salaryResponse] = await Promise.all([
+            apiClient.getTopDomains(),
+            apiClient.getSalaryInsights()
+        ]);
+        
+        if (domainResponse.status !== 'success' || salaryResponse.status !== 'success') {
+            throw new Error('Failed to fetch domain or salary data');
+        }
+        
+        const domainCounts = domainResponse.data;
+        const salaryData = salaryResponse.data;
         
         if (domainCounts && salaryData && domainCounts.length > 0 && salaryData.length > 0) {
             // Create a map of domain to count
@@ -491,15 +499,17 @@ async function initCompanyHiringChart() {
         Utils.hideLoading('companyChartLoader');
     }
 }
-
-// Update company table with data
 async function updateCompanyTable(companyData) {
     try {
         const tableBody = document.getElementById('companyTableBody');
         
         if (tableBody && companyData && companyData.length > 0) {
             // Get domain data
-            const domainsData = await Utils.fetchData('/top-domains');
+            const domainResponse = await apiClient.getTopDomains();
+            if (domainResponse.status !== 'success' || !domainResponse.data) {
+                throw new Error('Failed to fetch domain data');
+            }
+            const domainsData = domainResponse.data;
             
             // Create map of domains
             const domainMap = new Map();
@@ -511,7 +521,11 @@ async function updateCompanyTable(companyData) {
             }
             
             // Get filtered data
-            const filteredData = await Utils.fetchData('/filter-data');
+            const response = await apiClient.getFilteredData();
+            if (response.status !== 'success') {
+                throw new Error('Failed to fetch filtered data');
+            }
+            const filteredData = response.data;
             
             // Create map of company to domains
             const companyDomainMap = new Map();
@@ -628,10 +642,18 @@ async function loadSalaryStats() {
 // Initialize market quadrants
 async function initMarketQuadrants() {
     try {
-        // Get domain counts
-        const domainCounts = await Utils.fetchData('/top-domains');
-        // Get salary data
-        const salaryData = await Utils.fetchData('/salary-insights');
+        // Get domain counts and salary data
+        const [domainResponse, salaryResponse] = await Promise.all([
+            apiClient.getTopDomains(),
+            apiClient.getSalaryInsights()
+        ]);
+        
+        if (domainResponse.status !== 'success' || salaryResponse.status !== 'success') {
+            throw new Error('Failed to fetch domain or salary data');
+        }
+        
+        const domainCounts = domainResponse.data;
+        const salaryData = salaryResponse.data;
         
         if (domainCounts && salaryData && domainCounts.length > 0 && salaryData.length > 0) {
             // Create a map of domain to count
@@ -754,10 +776,14 @@ function initFilterFunctionality() {
 // Load filter options
 async function loadFilterOptions(domainFilter, locationFilter) {
     try {
-        // Fetch domains
-        const domains = await Utils.fetchData('/domains');
+        // Fetch domains and locations
+        const [domainsResponse, locationsResponse] = await Promise.all([
+            apiClient.getDomains(),
+            apiClient.getLocations()
+        ]);
         
-        if (domains && domainFilter) {
+        if (domainsResponse.status === 'success' && domainFilter) {
+            const domains = domainsResponse.data || [];
             // Clear existing options except for 'All'
             while (domainFilter.options.length > 1) {
                 domainFilter.remove(1);
@@ -772,10 +798,8 @@ async function loadFilterOptions(domainFilter, locationFilter) {
             });
         }
         
-        // Fetch locations
-        const locations = await Utils.fetchData('/locations');
-        
-        if (locations && locationFilter) {
+        if (locationsResponse.status === 'success' && locationFilter) {
+            const locations = locationsResponse.data || [];
             // Clear existing options except for 'All'
             while (locationFilter.options.length > 1) {
                 locationFilter.remove(1);
@@ -797,28 +821,26 @@ async function loadFilterOptions(domainFilter, locationFilter) {
 // Apply filters
 async function applyFilters(domain, location, minSalary) {
     try {
-        // Build query parameters
-        const params = new URLSearchParams();
+        const filters = {};
         
         if (domain && domain !== 'All') {
-            params.append('domain', domain);
+            filters.domain = domain;
         }
         
         if (location && location !== 'All') {
-            params.append('location', location);
+            filters.location = location;
         }
         
         if (minSalary > 0) {
-            params.append('min_salary', minSalary.toString());
+            filters.min_salary = minSalary;
         }
         
-        // Fetch filtered data
-        const url = `/filter-data${params.toString() ? `?${params.toString()}` : ''}`;
-        const response = await Utils.fetchData(url);
+        // Fetch filtered data using apiClient
+        const response = await apiClient.getFilteredData(filters);
         
-        if (response) {
+        if (response.status === 'success') {
             // Update results section
-            updateFilteredResults(response);
+            updateFilteredResults(response.data);
             
             // Show the filtered results section
             const resultsSection = document.getElementById('filteredResultsSection');
@@ -828,6 +850,8 @@ async function applyFilters(domain, location, minSalary) {
                 // Scroll to results
                 resultsSection.scrollIntoView({ behavior: 'smooth' });
             }
+        } else {
+            throw new Error('Failed to fetch filtered data');
         }
     } catch (error) {
         console.error('Error applying filters:', error);
